@@ -7,6 +7,42 @@
 .nav-cta { display: inline-flex; align-items: center; gap: .5rem; }
 .brand-mark { text-decoration: none; }
 
+/* ─── Escala UI controlada por el panel de Tweaks (slider) ───
+   Afecta: barra de header (padding + nav font + logo), botones (.btn y .nav-cta).
+   No toca el hero ni los títulos de sección — esos llevan su propio escalado responsive. */
+.site-header {
+  padding-top: calc(1rem * var(--ui-scale, 1));
+  padding-bottom: calc(1rem * var(--ui-scale, 1));
+}
+.brand-mark img {
+  width: calc(36px * var(--ui-scale, 1));
+  height: calc(36px * var(--ui-scale, 1));
+}
+.brand-mark span {
+  font-size: calc(var(--fs-small) * var(--ui-scale, 1));
+}
+.nav-list a {
+  font-size: calc(var(--fs-small) * var(--ui-scale, 1));
+}
+.nav-cta {
+  font-size: calc(var(--fs-small) * var(--ui-scale, 1));
+  padding: calc(.55rem * var(--ui-scale, 1)) calc(1rem * var(--ui-scale, 1));
+}
+.btn {
+  font-size: calc(var(--fs-small) * var(--ui-scale, 1));
+  padding: calc(.85rem * var(--ui-scale, 1)) calc(1.35rem * var(--ui-scale, 1));
+}
+
+/* Eyebrow más grande (variante para llamadas tipo "Próximo proyecto") */
+.eyebrow-lg {
+  font-size: calc(var(--fs-eyebrow) * 1.35);
+  letter-spacing: 0.22em;
+  padding: .35rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  display: inline-block;
+}
+
 .form-feedback {
   display: inline-flex; align-items: center; gap: .4rem;
   font-family: var(--font-mono); font-size: .8rem;
@@ -52,8 +88,8 @@
 
 /* Carousel arriba del todo: cuando va antes del hero */
 .carousel-section.top {
-  padding-top: clamp(1.5rem, 3vw, 2.5rem);
-  padding-bottom: clamp(2rem, 5vw, 4rem);
+  padding-top: clamp(.75rem, 1.5vw, 1.25rem);
+  padding-bottom: clamp(.75rem, 1.5vw, 1.25rem);
 }
 .carousel-section.top .carousel-head {
   margin-bottom: clamp(1rem, 2vw, 1.5rem);
@@ -147,45 +183,53 @@
   .lightbox .caption { bottom: clamp(8rem, 26vw, 11rem); }
 }
 
-/* ─── Marquee de palabras: variantes tipográficas controladas por el panel ───
-   - sansplana (default nuevo): sans pesado y achatado vertical
+/* ─── Marquee de palabras: pensado como banner sutil de cierre del primer viewport.
+   - sansplana (default): sans pesado, achatado vertical, tamaño contenido
    - display:    fuente display de la paleta (italic serif por defecto)
    - condensada: Antonio condensed (alto y estrecho)
    - mono:       JetBrains Mono                                                  */
+.ticker {
+  padding: .5rem 0;
+}
+.ticker-track {
+  font-size: clamp(1rem, 1.8vw, 1.5rem);
+  gap: clamp(2rem, 4vw, 3.5rem);
+}
 .ticker-track > span { display: inline-block; }
 
 [data-marquee="sansplana"] .ticker-track {
   font-family: var(--font-sans);
   font-style: normal;
   font-weight: 700;
-  letter-spacing: -0.03em;
-  font-size: clamp(2.4rem, 6vw, 4.8rem);
+  letter-spacing: -0.02em;
+  font-size: clamp(1.1rem, 2vw, 1.7rem);
   text-transform: lowercase;
-  transform: scaleY(0.78);
+  transform: scaleY(0.82);
   transform-origin: center;
-  padding-block: .35rem;
 }
 [data-marquee="display"] .ticker-track {
   font-family: var(--font-display);
   font-style: var(--display-italic);
   font-weight: var(--display-weight);
   text-transform: lowercase;
+  font-size: clamp(1.3rem, 2.4vw, 2rem);
 }
 [data-marquee="condensada"] .ticker-track {
   font-family: "Antonio", "Oswald", sans-serif;
   font-style: normal;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   text-transform: lowercase;
-  transform: scaleY(0.92);
+  font-size: clamp(1.3rem, 2.4vw, 2rem);
+  transform: scaleY(0.94);
 }
 [data-marquee="mono"] .ticker-track {
   font-family: var(--font-mono);
   font-style: normal;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: lowercase;
-  font-size: clamp(1.6rem, 4vw, 3rem);
+  font-size: clamp(.95rem, 1.6vw, 1.4rem);
 }
 
 /* Reduce-motion override (lo aplica el panel de Tweaks) */

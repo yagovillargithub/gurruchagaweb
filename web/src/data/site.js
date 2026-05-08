@@ -5,13 +5,13 @@ export const ESTUDIO = {
   rubro: 'Amoblamientos · Diseño · Decoración',
   whatsapp: '2954 27 2523',
   whatsappLink: 'https://wa.me/5492954272523',
-  facebook: 'https://facebook.com/GURRUCHAGA3D',
+  facebook: 'https://www.facebook.com/profile.php?id=61561938128763',
   facebookHandle: '@GURRUCHAGA3D',
   instagram: '@gurruchaga3d',
   email: 'estudio@gurruchagaweb.com',
   ciudad: 'Santa Rosa, La Pampa',
   pais: 'Argentina',
-  desde: 2014,
+  desde: 2018,
 };
 
 export const CATEGORIAS = [

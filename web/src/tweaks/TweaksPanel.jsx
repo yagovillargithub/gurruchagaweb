@@ -61,15 +61,6 @@ const SECTIONS = [
     ],
   },
   {
-    key: 'carouselHeight',
-    label: 'Altura del carrusel',
-    options: [
-      { value: 'compacto', label: 'Compacta' },
-      { value: 'medio', label: 'Media' },
-      { value: 'alto', label: 'Alta' },
-    ],
-  },
-  {
     key: 'marquee',
     label: 'Tipografía del marquee',
     options: [
@@ -183,6 +174,48 @@ export default function TweaksPanel() {
                   <div className="tw-range-marks" aria-hidden="true">
                     <span>lento</span>
                     <span>rápido</span>
+                  </div>
+                </section>
+
+                <section className="tw-section">
+                  <p className="tw-section-label">
+                    Altura del carrusel{' '}
+                    <span className="tw-section-val">{Math.round(tweaks.carouselHeight * 100)}%</span>
+                  </p>
+                  <input
+                    type="range"
+                    min={0.65}
+                    max={1.2}
+                    step={0.02}
+                    value={tweaks.carouselHeight}
+                    onChange={(e) => setKey('carouselHeight', Number(e.target.value))}
+                    className="tw-range"
+                    aria-label="Altura de las filas del carrusel"
+                  />
+                  <div className="tw-range-marks" aria-hidden="true">
+                    <span>compacta</span>
+                    <span>alta</span>
+                  </div>
+                </section>
+
+                <section className="tw-section">
+                  <p className="tw-section-label">
+                    Tamaño UI (header, logo, botones){' '}
+                    <span className="tw-section-val">{Math.round(tweaks.uiScale * 100)}%</span>
+                  </p>
+                  <input
+                    type="range"
+                    min={0.85}
+                    max={1.3}
+                    step={0.02}
+                    value={tweaks.uiScale}
+                    onChange={(e) => setKey('uiScale', Number(e.target.value))}
+                    className="tw-range"
+                    aria-label="Escala del header, logo y botones"
+                  />
+                  <div className="tw-range-marks" aria-hidden="true">
+                    <span>compacto</span>
+                    <span>grande</span>
                   </div>
                 </section>
 

@@ -1,32 +1,31 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 
-const STORAGE_KEY = 'gurru:tweaks:v2';
+const STORAGE_KEY = 'gurru:tweaks:v3';
 
 export const DEFAULTS = {
-  mode: 'light',                // light | dark
-  palette: 'azul',              // azul | azul2 | mono | warm | verde
-  type: 'editorial',            // editorial | display-fino | grotesque | miso
-  density: 'amplio',            // amplio | compacto
-  carousel: 'paralelo',         // paralelo | infinito | diagonal
-  carouselSpeed: 5,             // 1..10 → mult 0.2..2.0 (5 = 1x default)
-  carouselHeight: 'medio',      // compacto | medio | alto
-  marquee: 'sansplana',         // sansplana | display | condensada | mono
-  accent: null,                 // null = paleta; o '#hexcolor'
-  motion: 'full',               // full | reduced
+  mode: 'light',
+  palette: 'azul',
+  type: 'editorial',
+  density: 'amplio',
+  carousel: 'paralelo',
+  carouselSpeed: 5,             // 1..10 → mult 0.2..2.0
+  carouselHeight: 0.82,         // ahora número 0.65..1.20 (slider continuo)
+  uiScale: 1.0,                 // 0.85..1.30 — escala header/botones/logo
+  marquee: 'sansplana',
+  accent: null,
+  motion: 'full',
 };
 
 const TweaksCtx = createContext(null);
 
-const HEIGHT_TO_SCALE = {
-  compacto: 0.75,
-  medio: 0.88,
-  alto: 1.0,
-};
-
 function speedToMultiplier(level) {
-  // 1..10 → 0.2..2.0, with 5 ≈ 1.0
   const n = Math.max(1, Math.min(10, Number(level) || 5));
   return Math.round((n / 5) * 100) / 100;
+}
+
+function clamp(n, min, max) {
+  if (typeof n !== 'number' || Number.isNaN(n)) return null;
+  return Math.max(min, Math.min(max, n));
 }
 
 function readStored() {
@@ -34,7 +33,12 @@ function readStored() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? { ...DEFAULTS, ...parsed } : null;
+    if (!parsed || typeof parsed !== 'object') return null;
+    // sanity-clamp por si manipulan localStorage
+    const out = { ...DEFAULTS, ...parsed };
+    out.carouselHeight = clamp(out.carouselHeight, 0.65, 1.2) ?? DEFAULTS.carouselHeight;
+    out.uiScale = clamp(out.uiScale, 0.85, 1.3) ?? DEFAULTS.uiScale;
+    return out;
   } catch {
     return null;
   }
@@ -49,11 +53,10 @@ function applyToRoot(t) {
   r.setAttribute('data-motion', t.motion);
   r.setAttribute('data-marquee', t.marquee);
 
-  // Carousel runtime knobs (CSS vars)
   const speedMult = speedToMultiplier(t.carouselSpeed);
-  const hScale = HEIGHT_TO_SCALE[t.carouselHeight] ?? 0.88;
   r.style.setProperty('--carousel-speed-mult', String(speedMult));
-  r.style.setProperty('--carousel-h-scale', String(hScale));
+  r.style.setProperty('--carousel-h-scale', String(t.carouselHeight));
+  r.style.setProperty('--ui-scale', String(t.uiScale));
 
   if (t.accent) {
     r.style.setProperty('--accent', t.accent);

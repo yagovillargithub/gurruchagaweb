@@ -6,7 +6,7 @@ export default function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="col">
-        <h4>Estudio</h4>
+        <h4>Taller</h4>
         <p
           style={{
             margin: 0,
@@ -60,7 +60,7 @@ export default function SiteFooter() {
         <ul>
           <li>{ESTUDIO.ciudad}</li>
           <li>{ESTUDIO.pais}</li>
-          <li>Estudio desde {ESTUDIO.desde}</li>
+          <li>Desde {ESTUDIO.desde}</li>
         </ul>
       </div>
       <div className="footer-bottom">

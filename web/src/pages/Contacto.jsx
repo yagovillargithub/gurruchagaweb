@@ -166,7 +166,7 @@ export default function Contacto() {
                   ◉
                 </span>
                 <div>
-                  <div className="label">Estudio</div>
+                  <div className="label">Taller</div>
                   <div className="value">
                     {ESTUDIO.ciudad}, {ESTUDIO.pais}
                   </div>

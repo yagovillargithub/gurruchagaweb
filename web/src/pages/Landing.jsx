@@ -83,7 +83,7 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="eyebrow">Estudio · {ESTUDIO.ciudad}</span>
+            <span className="eyebrow">Taller · {ESTUDIO.ciudad}</span>
             <span className="eyebrow">
               Desde {ESTUDIO.desde} / {new Date().getFullYear()}
             </span>
@@ -104,9 +104,9 @@ export default function Landing() {
             transition={{ duration: 0.7, delay: 0.25 }}
           >
             <p className="lede">
-              Estudio de <strong>diseño y fabricación de mobiliario</strong> a medida. Pensamos
+              Taller de <strong>diseño y fabricación de mobiliario</strong> a medida. Pensamos
               cocinas, livings, comercios y soluciones habitables que duran: proyecto, render 3D,
-              taller propio y montaje en obra.
+              producción propia y montaje en obra.
             </p>
             <div>
               <p className="label">Tagline</p>
@@ -143,7 +143,7 @@ export default function Landing() {
             }}
             {...fadeUp}
           >
-            <h2 className="h2" style={{ maxWidth: '14ch' }}>
+            <h2 className="h2" style={{ whiteSpace: 'nowrap' }}>
               Lo que hacemos<em>, integralmente</em>.
             </h2>
             <p className="lede" style={{ margin: 0 }}>
@@ -158,28 +158,21 @@ export default function Landing() {
             </article>
             <article className="service">
               <span className="num">02 / Producción</span>
-              <h3>Taller propio</h3>
+              <h3>Producción propia</h3>
               <p>Carpintería, melamina, laqueados y maderas macizas. Calidad bajo control.</p>
             </article>
             <article className="service">
               <span className="num">03 / Obra</span>
               <h3>Montaje y dirección</h3>
-              <p>Coordinamos plomería, electricidad y herrería para entregar todo terminado.</p>
+              <p>
+                Coordinamos contigo relevamiento de medidas, confección de planos, fabricación
+                e instalación. Todo según tus tiempos.
+              </p>
             </article>
             <article className="service">
               <span className="num">04 / Comercios</span>
-              <h3>Locales y oficinas</h3>
-              <p>Equipamiento integral para gastronomía, retail y consultorios.</p>
-            </article>
-            <article className="service">
-              <span className="num">05 / Container</span>
-              <h3>Container habitable</h3>
-              <p>Soluciones modulares para oficinas, locales o vivienda compacta.</p>
-            </article>
-            <article className="service">
-              <span className="num">06 / Decoración</span>
-              <h3>Estilismo y selección</h3>
-              <p>Acompañamos en la elección de iluminación, textiles y revestimientos.</p>
+              <h3>Amoblamiento integral</h3>
+              <p>Para gastronomía, retail, consultorios…</p>
             </article>
           </motion.div>
         </div>
@@ -187,7 +180,7 @@ export default function Landing() {
 
       <section className="section" style={{ background: 'var(--bg-elev)' }}>
         <div className="shell">
-          <span className="eyebrow">Estudio</span>
+          <span className="eyebrow">Taller</span>
           <motion.div className="about-grid" style={{ marginTop: '1.5rem' }} {...fadeUp}>
             <div>
               <h2 className="h2">
@@ -200,11 +193,11 @@ export default function Landing() {
               <p className="lede">
                 Trabajamos desde <strong>{ESTUDIO.ciudad}</strong> con clientes de toda la región
                 pampeana. Cada mueble se piensa al detalle, se renderiza para validar y se fabrica
-                en taller propio para garantizar terminaciones impecables.
+                en producción propia para garantizar terminaciones impecables.
               </p>
               <div className="stat">
                 <span className="num">10+</span>
-                <span className="label">años de estudio</span>
+                <span className="label">años de taller</span>
               </div>
               <div className="stat">
                 <span className="num">240</span>
@@ -229,13 +222,12 @@ export default function Landing() {
           style={{ textAlign: 'center', display: 'grid', gap: '2rem', justifyItems: 'center' }}
           {...fadeUp}
         >
-          <span className="eyebrow">Próximo proyecto</span>
+          <span className="eyebrow eyebrow-lg">Próximo proyecto</span>
           <h2 className="display" style={{ fontSize: 'var(--fs-mega)', maxWidth: '14ch' }}>
             ¿Imaginás algo? <em>Lo fabricamos.</em>
           </h2>
           <p className="lede" style={{ textAlign: 'center' }}>
-            Contanos qué ambiente o local querés transformar y armamos un anteproyecto sin
-            compromiso.
+            Contanos qué ambiente o local querés transformar y hablamos.
           </p>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
             <Link className="btn btn-primary" to="/contacto">

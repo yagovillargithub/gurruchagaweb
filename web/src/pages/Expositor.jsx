@@ -79,9 +79,8 @@ export default function Expositor() {
             </span>
           </motion.h1>
           <p className="lede" style={{ marginTop: '2rem', maxWidth: '64ch' }}>
-            Catálogo de proyectos del estudio. Cocinas, livings, librerías, comercios y soluciones
-            container fabricados a medida. Filtrá por categoría o hacé clic en cualquier obra para
-            ampliarla.
+            Catálogo de proyectos del taller. Cocinas, livings, librerías, comercios y muebles a
+            medida. Filtrá por categoría o hacé clic en cualquier obra para ampliarla.
           </p>
 
           <div className="filter-bar">
