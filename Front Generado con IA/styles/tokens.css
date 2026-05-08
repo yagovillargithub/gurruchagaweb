@@ -1,0 +1,126 @@
+/* ============================================================
+   Gurruchaga · Design tokens
+   Paleta principal: azul-grís AG Studio + neutros suaves
+   ============================================================ */
+
+:root {
+  /* —— Brand fixed —— */
+  --ag-blue:        #8a9bb0;   /* azul AG (logo principal) */
+  --ag-blue-light:  #cdd5dd;   /* azul claro (segundo círculo) */
+  --ag-navy:        #1f3552;   /* navy whatsapp / acento profundo */
+  --ag-navy-deep:   #142238;
+  --ag-warm-white:  #f6f4ef;
+  --ag-cream:       #ece6da;
+  --ag-graphite:    #1a1c1f;
+  --ag-soft-grey:   #6b7280;
+  --ag-line:        rgba(20, 34, 56, 0.12);
+
+  /* —— Defaults (azul AG, light, amplio, editorial) —— */
+  --bg:        #f5f3ee;
+  --bg-elev:   #ffffff;
+  --fg:        #1a1c1f;
+  --fg-muted:  #5a6471;
+  --fg-soft:   #8a8f96;
+  --line:      rgba(26, 28, 31, 0.12);
+  --line-soft: rgba(26, 28, 31, 0.06);
+  --accent:    #6b85a0;
+  --accent-2:  #1f3552;
+  --on-accent: #ffffff;
+
+  /* Tipografía */
+  --font-display: "Instrument Serif", "Cormorant Garamond", Georgia, serif;
+  --font-sans:    "Manrope", "Geist", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  --display-italic: italic;
+  --display-weight: 400;
+
+  /* Density */
+  --section-y: 9rem;
+  --gutter:    clamp(1.25rem, 4vw, 3rem);
+  --max-w:     1480px;
+
+  /* Type scale */
+  --fs-mega:   clamp(4rem, 12vw, 11rem);
+  --fs-h1:     clamp(2.5rem, 6vw, 5.25rem);
+  --fs-h2:     clamp(1.75rem, 3.4vw, 3rem);
+  --fs-h3:     clamp(1.25rem, 1.8vw, 1.6rem);
+  --fs-body:   clamp(1rem, 1.05vw, 1.125rem);
+  --fs-small:  0.825rem;
+  --fs-eyebrow: 0.72rem;
+
+  --radius-sm: 4px;
+  --radius:    14px;
+  --radius-lg: 28px;
+
+  --ease: cubic-bezier(.2, .7, .2, 1);
+}
+
+/* —— Palette: monocromo con acento azul AG —— */
+[data-palette="mono"] {
+  --bg: #f4f3f0;
+  --bg-elev: #ffffff;
+  --fg: #0e0f10;
+  --fg-muted: #4a4d52;
+  --fg-soft: #7a7d82;
+  --accent: #8a9bb0;
+  --accent-2: #0e0f10;
+}
+
+/* —— Palette: cálido (madera/crema) + acento AG —— */
+[data-palette="warm"] {
+  --bg: #efeae0;
+  --bg-elev: #faf6ed;
+  --fg: #261e15;
+  --fg-muted: #5b4d3b;
+  --fg-soft: #8a7d6b;
+  --line: rgba(38, 30, 21, 0.14);
+  --line-soft: rgba(38, 30, 21, 0.07);
+  --accent: #6b85a0;
+  --accent-2: #1f3552;
+}
+
+/* —— Dark mode —— */
+[data-mode="dark"] {
+  --bg: #0e1217;
+  --bg-elev: #161b22;
+  --fg: #ece9e2;
+  --fg-muted: #a4adb8;
+  --fg-soft: #6f7a86;
+  --line: rgba(236, 233, 226, 0.14);
+  --line-soft: rgba(236, 233, 226, 0.07);
+  --accent: #aebccd;
+  --accent-2: #ece9e2;
+  --on-accent: #0e1217;
+}
+[data-mode="dark"][data-palette="warm"] {
+  --bg: #18130c;
+  --bg-elev: #211a11;
+  --accent: #d6b48a;
+  --accent-2: #ece9e2;
+}
+[data-mode="dark"][data-palette="mono"] {
+  --bg: #0a0a0b;
+  --bg-elev: #131316;
+}
+
+/* —— Type pairings —— */
+[data-type="display-fino"] {
+  --font-display: "Bodoni Moda", "Didot", "Tenor Sans", serif;
+  --display-italic: normal;
+  --display-weight: 500;
+}
+[data-type="grotesque"] {
+  --font-display: "Bricolage Grotesque", "Manrope", system-ui, sans-serif;
+  --display-italic: normal;
+  --display-weight: 600;
+}
+
+/* —— Density —— */
+[data-density="compacto"] {
+  --section-y: 5.5rem;
+  --gutter: clamp(1rem, 3vw, 2rem);
+  --fs-mega: clamp(3rem, 9vw, 7.5rem);
+  --fs-h1: clamp(2rem, 4.5vw, 4rem);
+  --fs-h2: clamp(1.4rem, 2.6vw, 2.25rem);
+}

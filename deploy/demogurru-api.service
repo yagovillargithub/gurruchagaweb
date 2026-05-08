@@ -1,0 +1,23 @@
+[Unit]
+Description=Demogurru contact API (Express + nodemailer)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/demogurru-api
+EnvironmentFile=/opt/demogurru-api/.env
+ExecStart=/usr/bin/node /opt/demogurru-api/server.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
