@@ -7,7 +7,7 @@ import SiteFooter from '../components/SiteFooter.jsx';
 import TaglineMarquee from '../components/TaglineMarquee.jsx';
 import Carousel from '../components/Carousel.jsx';
 import Lightbox from '../components/Lightbox.jsx';
-import { ESTUDIO, PROYECTOS, CATEGORIAS } from '../data/site.js';
+import { ESTUDIO, PROYECTOS, CATEGORIAS, MODULAR } from '../data/site.js';
 import { useTweaks } from '../tweaks/TweaksContext.jsx';
 
 const fadeUp = {
@@ -40,6 +40,9 @@ export default function Landing() {
       {/* Carrusel arriba del todo */}
       <section className="carousel-section top">
         <Carousel variant={tweaks.carousel} items={PROYECTOS} onItemClick={openProject} />
+        <p className="carousel-disclaimer">
+          <strong>Proyectos realizados</strong> por el taller · todas las imágenes son obra propia
+        </p>
       </section>
 
       <Lightbox
@@ -75,6 +78,64 @@ export default function Landing() {
 
       <TaglineMarquee />
 
+      {/* Crédito de fabricación: somos socios de Carpintería Rosignolo
+          La imagen de fondo es placeholder (proyecto en roble) — sustituir por
+          foto real del taller cuando esté disponible. */}
+      <section
+        className="rosignolo-section"
+        style={{ '--rosignolo-bg': "url('/assets/proyectos/living-tv-roble.jpg')" }}
+      >
+        <div className="rosignolo-overlay" aria-hidden="true" />
+        <div className="rosignolo-grain" aria-hidden="true" />
+        <motion.div
+          className="rosignolo-content shell"
+          {...fadeUp}
+        >
+          <div className="rosignolo-eyebrow-row">
+            <span className="rosignolo-badge">
+              <span className="rosignolo-badge-dot" aria-hidden="true" />
+              Socios productivos
+            </span>
+            <span className="rosignolo-eyebrow">
+              Producción · La Pampa, Argentina
+            </span>
+          </div>
+
+          <h2 className="rosignolo-title">
+            <span className="rosignolo-pre">Fabricado en sociedad con</span>
+            <span className="rosignolo-brand">
+              Carpintería <em>Rosignolo</em>
+            </span>
+          </h2>
+
+          <p className="rosignolo-lede">
+            Cada mueble que ves en este sitio se produce íntegramente en el
+            taller de <strong>Carpintería Rosignolo</strong>, nuestros socios de
+            fabricación. La <strong>dirección creativa</strong> y los <strong>renders 3D</strong>
+            vienen de AG Studio; la <strong>materia prima, el corte, el ensamble y las
+            terminaciones</strong> son obra de su carpintería. Una alianza que junta
+            visión de diseño y oficio de carpintería.
+          </p>
+
+          <div className="rosignolo-meta">
+            <div className="rosignolo-meta-item">
+              <span className="rosignolo-meta-num">10+</span>
+              <span className="rosignolo-meta-lbl">años en sociedad</span>
+            </div>
+            <div className="rosignolo-meta-sep" aria-hidden="true" />
+            <div className="rosignolo-meta-item">
+              <span className="rosignolo-meta-num">100%</span>
+              <span className="rosignolo-meta-lbl">producción propia</span>
+            </div>
+            <div className="rosignolo-meta-sep" aria-hidden="true" />
+            <div className="rosignolo-meta-item">
+              <span className="rosignolo-meta-num">AG × R</span>
+              <span className="rosignolo-meta-lbl">diseño × oficio</span>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
       <section className="hero">
         <div className="shell">
           <motion.div
@@ -89,13 +150,14 @@ export default function Landing() {
             </span>
           </motion.div>
           <motion.h1
-            className="hero-title"
+            className="hero-title hero-title-pro"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.2, 0.7, 0.2, 1] }}
           >
-            <span className="word-1">arancha</span>
-            <span className="word-2">gurruchaga</span>
+            <span className="word-1" data-text="arancha">arancha</span>
+            <span className="word-sep" aria-hidden="true" />
+            <span className="word-2" data-text="gurruchaga">gurruchaga</span>
           </motion.h1>
           <motion.div
             className="hero-meta"
@@ -213,6 +275,44 @@ export default function Landing() {
               </div>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      <section className="modular-teaser">
+        <div className="shell">
+          <motion.a
+            className="modular-card"
+            href={MODULAR.url}
+            target="_blank"
+            rel="noopener"
+            {...fadeUp}
+          >
+            <div className="modular-card-mark" aria-hidden="true">
+              <svg viewBox="0 0 32 32" width="44" height="44">
+                <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+                  <path d="M16 4 L28 10 L28 22 L16 28 L4 22 L4 10 Z" />
+                  <path d="M16 4 L16 16 L4 10" />
+                  <path d="M16 16 L28 10" />
+                  <path d="M16 16 L16 28" />
+                </g>
+              </svg>
+            </div>
+            <div className="modular-card-body">
+              <span className="eyebrow modular-eyebrow">Novedad · línea nueva</span>
+              <h3 className="modular-title">
+                Modular<em>.</em>
+              </h3>
+              <p className="modular-lede">
+                Estamos desarrollando una <strong>línea nueva de muebles modulares</strong>:
+                cocina, baño y placard. Sistema configurable, pensado para crecer con tu espacio.
+              </p>
+              <span className="modular-meta">{MODULAR.descriptor}</span>
+            </div>
+            <div className="modular-card-cta">
+              <span className="modular-cta-label">Conocer Modular</span>
+              <ArrowUpRight size={20} className="modular-cta-arrow" />
+            </div>
+          </motion.a>
         </div>
       </section>
 

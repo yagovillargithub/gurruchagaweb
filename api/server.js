@@ -169,6 +169,120 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, ts: Date.now() });
 });
 
+// Rate limit dedicado para feedback (más estricto: pocos por IP)
+const tweaksLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, error: 'Demasiados envíos. Probá en unos minutos.' },
+});
+
+const TWEAK_LABELS = {
+  mode: 'Modo',
+  palette: 'Paleta',
+  type: 'Tipografía',
+  density: 'Densidad',
+  carousel: 'Variante carrusel',
+  carouselSpeedR1: 'Velocidad fila 1',
+  carouselSpeedR2: 'Velocidad fila 2',
+  carouselSpeedR3: 'Velocidad fila 3',
+  carouselHeight: 'Altura carrusel',
+  uiScale: 'Escala UI',
+  marquee: 'Marquee',
+  accent: 'Acento',
+  motion: 'Movimiento',
+  carouselRadius: 'Bordes carrusel',
+  imageRadius: 'Bordes imágenes',
+  buttonRadius: 'Bordes botones',
+  watermark: 'Marca de agua',
+};
+
+function generateRef() {
+  return `TWK-${Math.floor(Math.random() * 9000 + 1000)}`;
+}
+
+function buildTweaksEmail(state, url, ref) {
+  const rows = Object.entries(state || {}).map(([k, v]) => [
+    TWEAK_LABELS[k] ?? k,
+    typeof v === 'boolean' ? (v ? 'Sí' : 'No') : v === null ? '—' : String(v),
+  ]);
+  const text =
+    `Una visita marcó "me gusta esta configuración" en demogurru.\n\n` +
+    rows.map(([k, v]) => `${k}: ${v}`).join('\n') +
+    `\n\nURL: ${url || '—'}\nRef: ${ref}\n`;
+  const html = `
+    <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;max-width:560px;padding:24px;background:#f6f4ef;">
+      <div style="background:#fff;border:1px solid #e6e2d7;border-radius:14px;overflow:hidden;">
+        <div style="padding:24px 28px;border-bottom:1px solid #eee;">
+          <div style="font-family:Georgia,serif;font-style:italic;font-size:1.5rem;color:#1f3552;line-height:1;">arancha<br/>GURRUCHAGA</div>
+          <div style="font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:#888;margin-top:.6rem;">Tweaks · me gusta esta configuración</div>
+        </div>
+        <div style="padding:20px 28px;">
+          <table style="width:100%;border-collapse:collapse;font-size:.92rem;">
+            ${rows
+              .map(
+                ([k, v]) => `
+              <tr>
+                <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#666;width:160px;">${escapeHtml(String(k))}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #eee;"><code style="background:#f6f4ef;padding:2px 6px;border-radius:4px;font-size:.88rem;">${escapeHtml(String(v))}</code></td>
+              </tr>`,
+              )
+              .join('')}
+          </table>
+          <p style="margin:18px 0 0;color:#666;font-size:12px;">URL: <a href="${escapeHtml(url || '')}" style="color:#1f3552;">${escapeHtml(url || '—')}</a></p>
+          <p style="margin:4px 0 0;color:#999;font-size:11px;">Ref: ${escapeHtml(ref)}</p>
+        </div>
+      </div>
+    </div>`.trim();
+  return { text, html };
+}
+
+const TWEAK_KEYS = new Set(Object.keys(TWEAK_LABELS));
+function sanitizeTweakState(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const out = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (!TWEAK_KEYS.has(k)) continue;
+    if (v === null) { out[k] = null; continue; }
+    if (typeof v === 'boolean' || typeof v === 'number') { out[k] = v; continue; }
+    if (typeof v === 'string' && v.length <= 60) { out[k] = v; continue; }
+  }
+  return out;
+}
+
+app.post('/api/tweaks-feedback', tweaksLimiter, async (req, res) => {
+  try {
+    const { state, url, website } = req.body || {};
+
+    // Honeypot — bots rellenan website
+    if (website && String(website).trim() !== '') {
+      return res.json({ ok: true, ref: generateRef() });
+    }
+
+    const sanState = sanitizeTweakState(state);
+    if (!sanState || Object.keys(sanState).length === 0) {
+      return res.status(400).json({ ok: false, error: 'Configuración inválida.' });
+    }
+    const sanUrl = typeof url === 'string' && url.length <= 500 ? url : '';
+    const ref = generateRef();
+    const { text, html } = buildTweaksEmail(sanState, sanUrl, ref);
+
+    await transporter.sendMail({
+      from: MAIL_FROM,
+      to: MAIL_TO,
+      subject: `[Tweaks demogurru] Configuración favorita · ${ref}`,
+      text,
+      html,
+    });
+
+    res.json({ ok: true, ref });
+  } catch (err) {
+    console.error('[tweaks-feedback] send failed:', err?.message || err);
+    res.status(500).json({ ok: false, error: 'No se pudo enviar la configuración.' });
+  }
+});
+
 app.post('/api/contact', limiter, async (req, res) => {
   try {
     const { nombre, email, telefono, proyecto, mensaje, website, proyectoRef } = req.body || {};

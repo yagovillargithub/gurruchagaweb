@@ -197,7 +197,9 @@ export default function Contacto() {
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <img className="ref-banner-thumb" src={reference.img} alt={reference.titulo} />
+                    <span className="ref-banner-thumb-wrap" aria-hidden="true">
+                      <img className="ref-banner-thumb" src={reference.img} alt={reference.titulo} />
+                    </span>
                     <div className="ref-banner-text">
                       <span className="ref-banner-eyebrow">Referencia adjunta</span>
                       <span className="ref-banner-title">{reference.titulo}</span>

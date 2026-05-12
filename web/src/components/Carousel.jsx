@@ -43,7 +43,7 @@ function CarouselParalelo({ items, onItemClick }) {
             <button
               key={`${idx}-${i}`}
               type="button"
-              className={`card ${idx === 1 ? 'tall' : ''}`}
+              className={`card ${idx === 1 ? 'wide' : ''}`}
               onClick={() => onItemClick && onItemClick(it)}
               aria-label={`Ampliar ${it.titulo}`}
             >

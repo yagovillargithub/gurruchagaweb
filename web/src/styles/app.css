@@ -85,7 +85,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .nav-cta {
   padding: .55rem 1rem;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   font-size: var(--fs-small);
   letter-spacing: .04em;
   transition: all .2s var(--ease);
@@ -126,7 +126,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .btn {
   display: inline-flex; align-items: center; gap: .55rem;
   padding: .85rem 1.35rem;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   font-size: var(--fs-small);
   letter-spacing: .06em; text-transform: uppercase;
   border: 1px solid var(--line);
@@ -215,28 +215,29 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   flex: 0 0 auto;
   width: clamp(200px, 24vw, calc(380px * var(--carousel-h-scale)));
   aspect-ratio: 4/3;
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   overflow: hidden;
   background: var(--bg-elev);
   border: 1px solid var(--line-soft);
   position: relative;
 }
-.cv-paralelo .row .card.tall { aspect-ratio: 3/4; width: clamp(160px, 18vw, calc(290px * var(--carousel-h-scale))); }
+.cv-paralelo .row .card.wide { aspect-ratio: 16/9; width: clamp(280px, 32vw, calc(500px * var(--carousel-h-scale))); }
 .cv-paralelo .row .card img { width: 100%; height: 100%; object-fit: cover; }
-.cv-paralelo .row.r1 { animation: scroll-l calc(60s / var(--carousel-speed-mult)) linear infinite; }
-.cv-paralelo .row.r2 { animation: scroll-r calc(50s / var(--carousel-speed-mult)) linear infinite; }
-.cv-paralelo .row.r3 { animation: scroll-l calc(70s / var(--carousel-speed-mult)) linear infinite; }
+/* Velocidades independientes por fila — defaults bajos porque a 1.0 ya iba demasiado rápido */
+.cv-paralelo .row.r1 { animation: scroll-l calc(60s / var(--carousel-speed-r1, 0.4)) linear infinite; }
+.cv-paralelo .row.r2 { animation: scroll-r calc(50s / var(--carousel-speed-r2, 0.35)) linear infinite; }
+.cv-paralelo .row.r3 { animation: scroll-l calc(70s / var(--carousel-speed-r3, 0.45)) linear infinite; }
 @keyframes scroll-l { from { transform: translateX(0) } to { transform: translateX(-50%) } }
 @keyframes scroll-r { from { transform: translateX(-50%) } to { transform: translateX(0) } }
 
-/* Variant: Infinito (single row + hover scale) */
+/* Variant: Infinito (single row + hover scale) — usa speed-r1 */
 .cv-infinito { display: flex; gap: 1rem; }
-.cv-infinito .track { display: flex; gap: 1.25rem; animation: scroll-l calc(70s / var(--carousel-speed-mult)) linear infinite; }
+.cv-infinito .track { display: flex; gap: 1.25rem; animation: scroll-l calc(70s / var(--carousel-speed-r1, 0.4)) linear infinite; }
 .cv-infinito .card {
   flex: 0 0 auto;
   width: clamp(240px, 28vw, calc(460px * var(--carousel-h-scale)));
   aspect-ratio: 5/4;
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   overflow: hidden;
   position: relative;
   transition: transform .5s var(--ease), filter .5s var(--ease);
@@ -248,14 +249,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .cv-infinito .card .label {
   position: absolute; left: 1rem; bottom: 1rem;
   background: rgba(0,0,0,0.55); color: #fff; backdrop-filter: blur(6px);
-  padding: .35rem .7rem; border-radius: 999px;
+  padding: .35rem .7rem; border-radius: var(--radius-chip);
   font-family: var(--font-mono); font-size: var(--fs-eyebrow);
   letter-spacing: .14em; text-transform: uppercase;
   opacity: 0; transform: translateY(6px); transition: all .35s var(--ease);
 }
 .cv-infinito .card:hover .label { opacity: 1; transform: translateY(0); }
 
-/* Variant: Diagonal */
+/* Variant: Diagonal — usa speed-r1 y speed-r2 */
 .cv-diagonal {
   position: relative;
   height: calc(clamp(420px, 60vw, 720px) * var(--carousel-h-scale));
@@ -265,33 +266,33 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   margin-block: 4rem;
 }
 .cv-diagonal .row { display: flex; gap: 1.25rem; }
-.cv-diagonal .row.r1 { animation: scroll-l calc(80s / var(--carousel-speed-mult)) linear infinite; }
-.cv-diagonal .row.r2 { animation: scroll-r calc(65s / var(--carousel-speed-mult)) linear infinite; }
+.cv-diagonal .row.r1 { animation: scroll-l calc(80s / var(--carousel-speed-r1, 0.4)) linear infinite; }
+.cv-diagonal .row.r2 { animation: scroll-r calc(65s / var(--carousel-speed-r2, 0.35)) linear infinite; }
 .cv-diagonal .card {
   flex: 0 0 auto;
   width: clamp(240px, 28vw, calc(420px * var(--carousel-h-scale)));
   aspect-ratio: 4/3;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   overflow: hidden;
   box-shadow: 0 30px 60px -30px rgba(0,0,0,.25);
 }
 .cv-diagonal .card img { width: 100%; height: 100%; object-fit: cover; }
 
-/* —— Servicios grid —— */
+/* —— Servicios grid (4 columnas para los 4 servicios; sin huecos) —— */
 .services {
   display: grid; gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-image);
   overflow: hidden;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
 }
 .service {
   background: var(--bg-elev);
-  padding: clamp(1.5rem, 3vw, 2.5rem);
-  display: grid; gap: 1rem;
+  padding: clamp(1.25rem, 2.4vw, 2rem);
+  display: grid; gap: .85rem;
   align-content: start;
-  min-height: 280px;
+  min-height: 240px;
 }
 .service .num {
   font-family: var(--font-mono);
@@ -307,7 +308,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   margin: 0;
 }
 .service p { color: var(--fg-muted); margin: 0; font-size: 0.95rem; }
-@media (max-width: 880px) {
+@media (max-width: 1100px) {
+  .services { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 540px) {
   .services { grid-template-columns: 1fr; }
 }
 
@@ -348,7 +352,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .filter-chip {
   padding: .55rem 1.1rem;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius-chip);
   font-size: var(--fs-small);
   letter-spacing: .04em;
   color: var(--fg-muted);
@@ -362,7 +366,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .mosaic .tile {
   display: block; break-inside: avoid;
   margin-bottom: 1rem;
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   overflow: hidden;
   position: relative;
   cursor: zoom-in;
@@ -391,7 +395,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   padding: 4vw;
   z-index: 90;
 }
-.lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: 6px; }
+.lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: var(--radius-image); }
 .lightbox .close {
   position: absolute; top: 1.5rem; right: 1.5rem;
   width: 44px; height: 44px; border-radius: 50%;
@@ -419,7 +423,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .contact-card {
   background: var(--bg-elev);
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
+  border-radius: var(--radius-image);
   padding: clamp(1.5rem, 3vw, 2.5rem);
   display: grid; gap: 1.25rem;
   align-content: start;
@@ -461,7 +465,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 .map-frame {
   height: 100%; min-height: 360px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-image);
   border: 1px solid var(--line);
   background: var(--bg-elev);
   position: relative;

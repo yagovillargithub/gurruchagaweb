@@ -38,6 +38,12 @@ export default function Lightbox({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
         >
+          <div className="lightbox-realbadge" aria-hidden="true">
+            <span className="dot" />
+            Proyecto realizado{items[openIndex].lugar ? ` · ${items[openIndex].lugar}` : ''}
+            {items[openIndex].anio ? ` · ${items[openIndex].anio}` : ''}
+          </div>
+
           <button
             className="close"
             onClick={(e) => {
@@ -68,15 +74,24 @@ export default function Lightbox({
           >
             <ChevronRight size={36} />
           </button>
-          <motion.img
+
+          {/* Wrapper para anclar el ::after de marca de agua */}
+          <motion.div
             key={items[openIndex].id || openIndex}
-            src={items[openIndex].img}
-            alt={items[openIndex].titulo}
+            className="lightbox-image"
             onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => e.preventDefault()}
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
-          />
+          >
+            <img
+              src={items[openIndex].img}
+              alt={items[openIndex].titulo}
+              draggable={false}
+            />
+          </motion.div>
+
           <div className="caption">
             {captionFor ? captionFor(items[openIndex]) : items[openIndex].titulo}
           </div>

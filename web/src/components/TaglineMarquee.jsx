@@ -1,7 +1,12 @@
-const DEFAULT_WORDS = ['ver', 'creer', 'diseñar', 'fabricar', 'habitar'];
+const DEFAULT_WORDS = [
+  'ver', 'creer', 'imaginar', 'diseñar', 'medir', 'cortar', 'lijar',
+  'ensamblar', 'pulir', 'laquear', 'fabricar', 'instalar', 'habitar',
+  'transformar', 'crear', 'soñar', 'durar', 'cuidar', 'cocinar',
+];
 
 export default function TaglineMarquee({ words = DEFAULT_WORDS }) {
-  const items = Array.from({ length: 4 }).flatMap((_, i) =>
+  // Duplicamos varias veces para que el bucle CSS translateX(-50%) no muestre huecos
+  const items = Array.from({ length: 3 }).flatMap((_, i) =>
     words.map((w, j) => ({ w, k: `${i}-${j}` })),
   );
   return (

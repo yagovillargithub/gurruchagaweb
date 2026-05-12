@@ -14,6 +14,15 @@ export const ESTUDIO = {
   desde: 2018,
 };
 
+// Línea nueva en desarrollo — sitio gateado con clave para demos.
+// Click desde la home de demogurru abre la URL de Modular en una pestaña nueva;
+// el visitante ve la pantalla "en construcción" con campo de clave.
+export const MODULAR = {
+  nombre: 'Modular',
+  url: 'https://demomodular.unlimited-systems.net/',
+  descriptor: 'Cocina · Baño · Placard',
+};
+
 export const CATEGORIAS = [
   { id: 'todos', label: 'Todo el trabajo' },
   { id: 'casas', label: 'Casas' },
