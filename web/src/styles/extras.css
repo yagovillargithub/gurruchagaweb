@@ -21,6 +21,21 @@
 .brand-mark span {
   font-size: calc(var(--fs-small) * var(--ui-scale, 1));
 }
+/* AG-studio prominente en el header — pedido del cliente: "debe ser más
+   grande en el encabezado". Usa la display font para más carácter. */
+.brand-mark-name {
+  font-family: var(--font-display);
+  font-style: var(--display-italic);
+  font-weight: var(--display-weight);
+  font-size: calc(1.4rem * var(--ui-scale, 1)) !important;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg);
+  line-height: 1;
+}
+@media (max-width: 640px) {
+  .brand-mark-name { font-size: calc(1.15rem * var(--ui-scale, 1)) !important; }
+}
 .nav-list a {
   font-size: calc(var(--fs-small) * var(--ui-scale, 1));
 }
@@ -929,23 +944,26 @@
   opacity: 1;
 }
 
-/* ───────────────────────── Bloque Rosignolo (crédito de fabricación) ──────────────
-   Va justo después del carrusel + marquee, antes del hero. Background con
-   imagen de taller (placeholder a sustituir) + overlay fuerte que asegura
-   contraste del texto encima. Funciona en cualquier paleta gracias a las vars. */
-.rosignolo-section {
+/* ───────────────────────── Bloque Intro · arancha presenta ──────────────────
+   Va justo después del carrusel + marquee (lo que el cliente llama "Página 2",
+   inmediatamente tras la landing). Presenta a arancha (bio + propuesta de
+   valor + stats de cierre) sobre un fondo de imagen de proyecto con overlay
+   fuerte para asegurar contraste del texto. El bloque sustituye al anterior
+   "Rosignolo" — Carpintería Rosignolo pasa a ser uno de los cuatro cuadros
+   de la sección "Lo que hacemos". */
+.intro-section {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   padding: clamp(4rem, 9vw, 7rem) 0;
-  background-image: var(--rosignolo-bg);
+  background-image: var(--intro-bg);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   color: #f5f3ee;
 }
 /* Overlay oscuro radial — más oscuro arriba/abajo, ligero en el centro */
-.rosignolo-overlay {
+.intro-overlay {
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -958,7 +976,7 @@
   backdrop-filter: saturate(70%) brightness(0.95);
 }
 /* Grano sutil para que la imagen de fondo no se vea limpia/pixelada */
-.rosignolo-grain {
+.intro-grain {
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -969,7 +987,7 @@
   mix-blend-mode: overlay;
 }
 
-.rosignolo-content {
+.intro-content {
   position: relative;
   z-index: 1;
   display: grid;
@@ -977,13 +995,13 @@
   max-width: 920px;
 }
 
-.rosignolo-eyebrow-row {
+.intro-eyebrow-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: clamp(.75rem, 2vw, 1.25rem);
 }
-.rosignolo-badge {
+.intro-badge {
   display: inline-flex;
   align-items: center;
   gap: .5rem;
@@ -998,14 +1016,14 @@
   background: rgba(245, 243, 238, 0.08);
   backdrop-filter: blur(6px);
 }
-.rosignolo-badge-dot {
+.intro-badge-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 0 0 var(--accent);
   animation: tw-pulse 2.4s var(--ease) infinite;
 }
-.rosignolo-eyebrow {
+.intro-eyebrow {
   font-family: var(--font-mono);
   font-size: var(--fs-eyebrow);
   letter-spacing: .18em;
@@ -1013,12 +1031,12 @@
   color: rgba(245, 243, 238, 0.65);
 }
 
-.rosignolo-title {
+.intro-title {
   margin: 0;
   display: grid;
   gap: .35rem;
 }
-.rosignolo-pre {
+.intro-pre {
   display: block;
   font-family: var(--font-mono);
   font-size: clamp(.85rem, 1.2vw, 1.05rem);
@@ -1027,7 +1045,7 @@
   color: rgba(245, 243, 238, 0.7);
   font-weight: 400;
 }
-.rosignolo-brand {
+.intro-brand {
   display: block;
   font-family: var(--font-display);
   font-style: var(--display-italic);
@@ -1037,24 +1055,24 @@
   letter-spacing: -0.02em;
   color: #f5f3ee;
 }
-.rosignolo-brand em {
+.intro-brand em {
   font-style: inherit;
   color: var(--accent);
 }
 
-.rosignolo-lede {
+.intro-lede {
   margin: 0;
   font-size: clamp(1rem, 1.4vw, 1.2rem);
   line-height: 1.6;
   color: rgba(245, 243, 238, 0.88);
   max-width: 64ch;
 }
-.rosignolo-lede strong {
+.intro-lede strong {
   color: #f5f3ee;
   font-weight: 600;
 }
 
-.rosignolo-meta {
+.intro-meta {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1063,11 +1081,11 @@
   margin-top: .5rem;
   border-top: 1px solid rgba(245, 243, 238, 0.18);
 }
-.rosignolo-meta-item {
+.intro-meta-item {
   display: grid;
   gap: .25rem;
 }
-.rosignolo-meta-num {
+.intro-meta-num {
   font-family: var(--font-display);
   font-style: var(--display-italic);
   font-weight: var(--display-weight);
@@ -1075,24 +1093,108 @@
   line-height: 1;
   color: var(--accent);
 }
-.rosignolo-meta-lbl {
+.intro-meta-lbl {
   font-family: var(--font-mono);
   font-size: var(--fs-eyebrow);
   letter-spacing: .14em;
   text-transform: uppercase;
   color: rgba(245, 243, 238, 0.7);
 }
-.rosignolo-meta-sep {
+.intro-meta-sep {
   width: 1px;
   height: 36px;
   background: rgba(245, 243, 238, 0.2);
 }
 @media (max-width: 640px) {
-  .rosignolo-meta-sep { display: none; }
-  .rosignolo-meta { gap: 1.25rem 2rem; }
+  .intro-meta-sep { display: none; }
+  .intro-meta { gap: 1.25rem 2rem; }
 }
 
-[data-motion="reduced"] .rosignolo-badge-dot {
+/* Propuesta de valor breve (frase justo después de la bio): pesa más que
+   un párrafo normal pero menos que el título. */
+.intro-claim {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: var(--display-italic);
+  font-weight: var(--display-weight);
+  font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+  line-height: 1.4;
+  color: #f5f3ee;
+  max-width: 64ch;
+}
+.intro-claim strong {
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-weight: 600;
+  color: var(--accent);
+}
+.intro-meta-ver-creer .intro-meta-num {
+  font-style: italic;
+  color: #f5f3ee;
+}
+
+/* Foto figurativa debajo de cada card de servicios. Sin marco redondeado
+   (pedido del cliente). Marca de agua AG aplicada vía data-watermark. */
+.service { display: flex; flex-direction: column; gap: 1rem; }
+.service-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  margin-top: auto;
+  border-radius: var(--radius-card);
+}
+
+/* Logo MODULAR naranja en el card teaser — sustituye al cubito SVG.
+   Tamaño contenido para que no domine el card, pero sí destaque por color. */
+.modular-card-logo {
+  display: block;
+  max-width: 180px;
+  width: 100%;
+  height: auto;
+  background: #fff;
+  padding: .65rem .9rem;
+  border-radius: 6px;
+}
+
+/* Sección about ("Diseñar es ver antes de creer") — la usuaria pidió
+   que el título quepa en una sola línea (sin <br/>) y modular tamaño en
+   móvil. */
+.about-title {
+  white-space: nowrap;
+  font-size: clamp(1.6rem, 4.2vw, 3rem);
+}
+@media (max-width: 540px) {
+  .about-title {
+    white-space: normal;     /* en móviles muy estrechos sí dejamos quebrar */
+    font-size: clamp(1.6rem, 7vw, 2.4rem);
+  }
+}
+.about-closing {
+  margin: 1.5rem 0 0;
+  font-family: var(--font-display);
+  font-style: var(--display-italic);
+  font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+  color: var(--accent);
+}
+
+/* Final CTA (página 6) — modular tamaños del título y del Ver.Creer cierre.
+   Pedido del cliente: en móvil el mega-titulo bajaba demasiado de tamaño. */
+.final-cta-title {
+  font-size: clamp(2.5rem, 8vw, 6.5rem);
+  max-width: 14ch;
+  line-height: 1.05;
+}
+.final-vercreer {
+  margin: 1rem 0 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  letter-spacing: .04em;
+  color: var(--accent);
+}
+
+[data-motion="reduced"] .intro-badge-dot {
   animation: none;
 }
 

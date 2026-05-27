@@ -6,7 +6,7 @@ export default function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="col">
-        <h4>Taller</h4>
+        <h4>AG-studio</h4>
         <p
           style={{
             margin: 0,

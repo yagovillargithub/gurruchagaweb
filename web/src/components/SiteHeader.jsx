@@ -4,9 +4,10 @@ import { ArrowRight } from 'lucide-react';
 export default function SiteHeader() {
   return (
     <header className="site-header">
-      <Link className="brand-mark" to="/" aria-label="AG Studio · inicio">
-        <img src="/assets/logo-anagrama.png" alt="" />
-        <span>AG · Studio</span>
+      {/* El anagrama AG queda reservado para la marca de agua sobre imágenes
+          (pedido del cliente). En el header solo texto: AG-studio prominente. */}
+      <Link className="brand-mark" to="/" aria-label="AG-studio · inicio">
+        <span className="brand-mark-name">AG-studio</span>
       </Link>
       <nav>
         <ul className="nav-list">

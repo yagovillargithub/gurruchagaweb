@@ -7,7 +7,7 @@ import SiteFooter from '../components/SiteFooter.jsx';
 import TaglineMarquee from '../components/TaglineMarquee.jsx';
 import Carousel from '../components/Carousel.jsx';
 import Lightbox from '../components/Lightbox.jsx';
-import { ESTUDIO, PROYECTOS, CATEGORIAS, MODULAR } from '../data/site.js';
+import { ESTUDIO, PROYECTOS, CAROUSEL, CATEGORIAS, MODULAR } from '../data/site.js';
 import { useTweaks } from '../tweaks/TweaksContext.jsx';
 
 const fadeUp = {
@@ -39,9 +39,9 @@ export default function Landing() {
 
       {/* Carrusel arriba del todo */}
       <section className="carousel-section top">
-        <Carousel variant={tweaks.carousel} items={PROYECTOS} onItemClick={openProject} />
+        <Carousel variant={tweaks.carousel} items={CAROUSEL} onItemClick={openProject} />
         <p className="carousel-disclaimer">
-          <strong>Proyectos realizados</strong> por el taller · todas las imágenes son obra propia
+          <strong>Proyectos realizados</strong> por AG-studio · todas las imágenes son obra propia
         </p>
       </section>
 
@@ -50,9 +50,10 @@ export default function Landing() {
         openIndex={lightboxIndex}
         onClose={() => setLightboxIndex(null)}
         onChange={setLightboxIndex}
-        captionFor={(p) =>
-          `${p.titulo} · ${CATEGORIAS.find((c) => c.id === p.categoria)?.label} · ${p.anio}`
-        }
+        captionFor={(p) => {
+          const cat = CATEGORIAS.find((c) => c.id === p.categoria)?.label;
+          return [p.titulo, cat, p.anio].filter(Boolean).join(' · ');
+        }}
         cta={(item) => {
           const catLabel = CATEGORIAS.find((c) => c.id === item.categoria)?.label || 'similares';
           return (
@@ -78,118 +79,81 @@ export default function Landing() {
 
       <TaglineMarquee />
 
-      {/* Crédito de fabricación: somos socios de Carpintería Rosignolo
-          La imagen de fondo es placeholder (proyecto en roble) — sustituir por
-          foto real del taller cuando esté disponible. */}
+      {/* "Página 2" — arancha presenta. Va justo después de la landing
+          (carrusel + marquee). Fusiona el hero (nombre grande) con la
+          presentación profesional + stats de cierre. Fondo de obra real
+          con overlay para contraste. TODO: cuando llegue la foto real de
+          arancha (retrato), usarla como --intro-bg en lugar del proyecto. */}
       <section
-        className="rosignolo-section"
-        style={{ '--rosignolo-bg': "url('/assets/proyectos/living-tv-roble.jpg')" }}
+        className="intro-section"
+        style={{ '--intro-bg': "url('/assets/proyectos/libreria-living-001.webp')" }}
       >
-        <div className="rosignolo-overlay" aria-hidden="true" />
-        <div className="rosignolo-grain" aria-hidden="true" />
+        <div className="intro-overlay" aria-hidden="true" />
+        <div className="intro-grain" aria-hidden="true" />
         <motion.div
-          className="rosignolo-content shell"
+          className="intro-content shell"
           {...fadeUp}
         >
-          <div className="rosignolo-eyebrow-row">
-            <span className="rosignolo-badge">
-              <span className="rosignolo-badge-dot" aria-hidden="true" />
-              Socios productivos
+          <div className="intro-eyebrow-row">
+            <span className="intro-badge">
+              <span className="intro-badge-dot" aria-hidden="true" />
+              AG-studio · {ESTUDIO.ciudad}
             </span>
-            <span className="rosignolo-eyebrow">
-              Producción · La Pampa, Argentina
+            <span className="intro-eyebrow">
+              Desde {ESTUDIO.desde} / {new Date().getFullYear()}
             </span>
           </div>
 
-          <h2 className="rosignolo-title">
-            <span className="rosignolo-pre">Fabricado en sociedad con</span>
-            <span className="rosignolo-brand">
-              Carpintería <em>Rosignolo</em>
+          <h2 className="intro-title">
+            <span className="intro-pre">Detrás de AG-studio</span>
+            <span className="intro-brand">
+              arancha <em>gurruchaga</em>
             </span>
           </h2>
 
-          <p className="rosignolo-lede">
-            Cada mueble que ves en este sitio se produce íntegramente en el
-            taller de <strong>Carpintería Rosignolo</strong>, nuestros socios de
-            fabricación. La <strong>dirección creativa</strong> y los <strong>renders 3D</strong>
-            vienen de AG Studio; la <strong>materia prima, el corte, el ensamble y las
-            terminaciones</strong> son obra de su carpintería. Una alianza que junta
-            visión de diseño y oficio de carpintería.
+          {/* TODO bio definitiva: arancha tiene que pasar texto real. Lo de abajo es
+              placeholder estructurado con los puntos que ella indicó en el doc
+              (formación bellas artes, cientos de trabajos en España y aquí). */}
+          <p className="intro-lede">
+            Larga trayectoria en <strong>diseño de interiores y mobiliario a medida</strong>.
+            Cientos de obras realizadas en España y otras tantas aquí, en la última
+            década. Formación en distintas áreas de las bellas artes —
+            <strong> arquitectura, diseño industrial</strong> y dirección de obra — que se
+            traducen en proyectos que duran.
           </p>
 
-          <div className="rosignolo-meta">
-            <div className="rosignolo-meta-item">
-              <span className="rosignolo-meta-num">10+</span>
-              <span className="rosignolo-meta-lbl">años en sociedad</span>
+          <p className="intro-claim">
+            <strong>Diseño, planificación y fabricación de mobiliario a medida.</strong>
+            {' '}Pensamos cocinas, livings, rincones y comercios — soluciones habitables
+            que duran. <strong>Producción propia.</strong>
+          </p>
+
+          <div className="intro-meta">
+            <div className="intro-meta-item">
+              <span className="intro-meta-num">+20</span>
+              <span className="intro-meta-lbl">años en el sector</span>
             </div>
-            <div className="rosignolo-meta-sep" aria-hidden="true" />
-            <div className="rosignolo-meta-item">
-              <span className="rosignolo-meta-num">100%</span>
-              <span className="rosignolo-meta-lbl">producción propia</span>
+            <div className="intro-meta-sep" aria-hidden="true" />
+            <div className="intro-meta-item">
+              <span className="intro-meta-num">+1000</span>
+              <span className="intro-meta-lbl">obras realizadas</span>
             </div>
-            <div className="rosignolo-meta-sep" aria-hidden="true" />
-            <div className="rosignolo-meta-item">
-              <span className="rosignolo-meta-num">AG × R</span>
-              <span className="rosignolo-meta-lbl">diseño × oficio</span>
+            <div className="intro-meta-sep" aria-hidden="true" />
+            <div className="intro-meta-item">
+              <span className="intro-meta-num">100%</span>
+              <span className="intro-meta-lbl">producción propia</span>
+            </div>
+            <div className="intro-meta-sep" aria-hidden="true" />
+            <div className="intro-meta-item">
+              <span className="intro-meta-num">AG-studio</span>
+              <span className="intro-meta-lbl">diseño · oficio</span>
+            </div>
+            <div className="intro-meta-sep" aria-hidden="true" />
+            <div className="intro-meta-item intro-meta-ver-creer">
+              <span className="intro-meta-num"><em>Ver. Creer.</em></span>
             </div>
           </div>
         </motion.div>
-      </section>
-
-      <section className="hero">
-        <div className="shell">
-          <motion.div
-            className="hero-eyebrow"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <span className="eyebrow">Taller · {ESTUDIO.ciudad}</span>
-            <span className="eyebrow">
-              Desde {ESTUDIO.desde} / {new Date().getFullYear()}
-            </span>
-          </motion.div>
-          <motion.h1
-            className="hero-title hero-title-pro"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease: [0.2, 0.7, 0.2, 1] }}
-          >
-            <span className="word-1" data-text="arancha">arancha</span>
-            <span className="word-sep" aria-hidden="true" />
-            <span className="word-2" data-text="gurruchaga">gurruchaga</span>
-          </motion.h1>
-          <motion.div
-            className="hero-meta"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.25 }}
-          >
-            <p className="lede">
-              Taller de <strong>diseño y fabricación de mobiliario</strong> a medida. Pensamos
-              cocinas, livings, comercios y soluciones habitables que duran: proyecto, render 3D,
-              producción propia y montaje en obra.
-            </p>
-            <div>
-              <p className="label">Tagline</p>
-              <p
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontStyle: 'var(--display-italic)',
-                  fontSize: '1.6rem',
-                  lineHeight: 1,
-                  margin: 0,
-                }}
-              >
-                Ver. Creer.
-              </p>
-            </div>
-            <div>
-              <p className="label">Servicios</p>
-              <p style={{ margin: 0 }}>Amoblamientos · Diseño · Decoración</p>
-            </div>
-          </motion.div>
-        </div>
       </section>
 
       <section className="section">
@@ -214,65 +178,83 @@ export default function Landing() {
           </motion.div>
           <motion.div className="services" {...fadeUp}>
             <article className="service">
-              <span className="num">01 / Diseño</span>
-              <h3>Proyecto y render 3D</h3>
-              <p>Relevamiento, planos, despiece y visualización fotorrealista. Ver antes de creer.</p>
+              <span className="num">01 / Proyecto</span>
+              <h3>Proyecto</h3>
+              <p>
+                Tomamos nota de tus necesidades y gustos, y desarrollamos una propuesta
+                personalizada para ese espacio de tu casa o negocio.
+              </p>
+              <img
+                className="service-photo"
+                src="/assets/foto-card-proyecto.png"
+                alt=""
+                loading="lazy"
+              />
             </article>
             <article className="service">
               <span className="num">02 / Producción</span>
-              <h3>Producción propia</h3>
-              <p>Carpintería, melamina, laqueados y maderas macizas. Calidad bajo control.</p>
+              <h3>Carpintería Rosignolo</h3>
+              <p>
+                Socios productivos con toda una vida en La Pampa. Taller industrial
+                perfectamente equipado: carpintería, melamina, laqueados y maderas
+                macizas.
+              </p>
+              <img
+                className="service-photo"
+                src="/assets/foto-card-produccion.png"
+                alt=""
+                loading="lazy"
+              />
             </article>
             <article className="service">
               <span className="num">03 / Obra</span>
               <h3>Montaje y dirección</h3>
               <p>
-                Coordinamos contigo relevamiento de medidas, confección de planos, fabricación
-                e instalación. Todo según tus tiempos.
+                Coordinamos contigo relevamiento de medidas, confección de planos,
+                fabricación e instalación. Todo según tus tiempos.
               </p>
+              <img
+                className="service-photo"
+                src="/assets/foto-card-obra.png"
+                alt=""
+                loading="lazy"
+              />
             </article>
             <article className="service">
-              <span className="num">04 / Comercios</span>
+              <span className="num">04 / Integral</span>
               <h3>Amoblamiento integral</h3>
-              <p>Para gastronomía, retail, consultorios…</p>
+              <p>
+                Vivienda completa y comercios — gastronomía, retail, consultorios.
+                Vos controlás todo el proceso, nosotros nos ocupamos del resto.
+              </p>
+              <img
+                className="service-photo"
+                src="/assets/foto-card-comercios.png"
+                alt=""
+                loading="lazy"
+              />
             </article>
           </motion.div>
         </div>
       </section>
 
-      <section className="section" style={{ background: 'var(--bg-elev)' }}>
+      <section className="section about-section" style={{ background: 'var(--bg-elev)' }}>
         <div className="shell">
-          <span className="eyebrow">Taller</span>
+          <span className="eyebrow">AG-studio</span>
           <motion.div className="about-grid" style={{ marginTop: '1.5rem' }} {...fadeUp}>
             <div>
-              <h2 className="h2">
-                Diseñar es ver
-                <br />
-                antes de creer.
-              </h2>
+              {/* En una línea — el cliente lo quiere así, no quebrar. */}
+              <h2 className="h2 about-title">Diseñar es ver antes de creer.</h2>
             </div>
             <div className="stat-stack">
               <p className="lede">
                 Trabajamos desde <strong>{ESTUDIO.ciudad}</strong> con clientes de toda la región
-                pampeana. Cada mueble se piensa al detalle, se renderiza para validar y se fabrica
-                en producción propia para garantizar terminaciones impecables.
+                pampeana. Cada mueble se piensa al detalle, se planifica y se fabrica en
+                producción propia para garantizar terminaciones impecables.
               </p>
-              <div className="stat">
-                <span className="num">10+</span>
-                <span className="label">años de taller</span>
-              </div>
-              <div className="stat">
-                <span className="num">240</span>
-                <span className="label">proyectos entregados</span>
-              </div>
-              <div className="stat">
-                <span className="num">100%</span>
-                <span className="label">a medida, en taller propio</span>
-              </div>
-              <div className="stat">
-                <span className="num">3D</span>
-                <span className="label">render previo en cada proyecto</span>
-              </div>
+              <p className="about-closing">
+                ¿Qué necesitás? <em>Pongamos en marcha la magia.</em>
+              </p>
             </div>
           </motion.div>
         </div>
@@ -288,14 +270,13 @@ export default function Landing() {
             {...fadeUp}
           >
             <div className="modular-card-mark" aria-hidden="true">
-              <svg viewBox="0 0 32 32" width="44" height="44">
-                <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
-                  <path d="M16 4 L28 10 L28 22 L16 28 L4 22 L4 10 Z" />
-                  <path d="M16 4 L16 16 L4 10" />
-                  <path d="M16 16 L28 10" />
-                  <path d="M16 16 L16 28" />
-                </g>
-              </svg>
+              {/* Logo MODULAR naranja oficial — diferenciado del azul AG-studio
+                  porque Modular es un producto propio con su propia identidad. */}
+              <img
+                className="modular-card-logo"
+                src="/assets/logo-modular-naranja.png"
+                alt=""
+              />
             </div>
             <div className="modular-card-body">
               <span className="eyebrow modular-eyebrow">Novedad · línea nueva</span>
@@ -316,14 +297,14 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="section">
+      <section className="section final-cta">
         <motion.div
           className="shell"
           style={{ textAlign: 'center', display: 'grid', gap: '2rem', justifyItems: 'center' }}
           {...fadeUp}
         >
           <span className="eyebrow eyebrow-lg">Próximo proyecto</span>
-          <h2 className="display" style={{ fontSize: 'var(--fs-mega)', maxWidth: '14ch' }}>
+          <h2 className="display final-cta-title">
             ¿Imaginás algo? <em>Lo fabricamos.</em>
           </h2>
           <p className="lede" style={{ textAlign: 'center' }}>
@@ -337,6 +318,11 @@ export default function Landing() {
               Ver expositor <ArrowUpRight size={16} className="arr" />
             </Link>
           </div>
+          {/* Cierre con la frase de marca — pedido explícito de arancha:
+              "Ver. Creer." aparece como remate antes del footer. */}
+          <p className="final-vercreer">
+            <em>Ver. Creer.</em>
+          </p>
         </motion.div>
       </section>
 
