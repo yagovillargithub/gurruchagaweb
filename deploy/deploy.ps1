@@ -63,6 +63,20 @@ function Step-Apache {
   Write-Host "`n=== APACHE VHOST ===" -ForegroundColor Cyan
   Invoke-SCP "$DeployDir/apache-demogurru.conf" "/etc/apache2/sites-available/$Domain.conf"
   Invoke-SSH "a2ensite $Domain.conf"
+
+  # Subir también el vhost :443 si el cert ya existe (post primera emisión).
+  # Antes del primer certbot el archivo no existe en el VPS y Apache fallaría → solo lo subimos si ya hay cert.
+  $sslConfPath = "$DeployDir/apache-demogurru-le-ssl.conf"
+  if (Test-Path $sslConfPath) {
+    & ssh "root@$VpsHost" "test -f /etc/letsencrypt/live/$Domain/fullchain.pem"
+    if ($LASTEXITCODE -eq 0) {
+      Invoke-SCP $sslConfPath "/etc/apache2/sites-available/$Domain-le-ssl.conf"
+      Invoke-SSH "a2ensite $Domain-le-ssl.conf"
+    } else {
+      Write-Host "[skip] $Domain-le-ssl.conf — cert aún no emitido, lo añadirá certbot en Step-Cert" -ForegroundColor Yellow
+    }
+  }
+
   Invoke-SSH 'a2enmod proxy proxy_http headers rewrite ssl 2>&1 | tail -3'
   Invoke-SSH 'apache2ctl configtest'
   Invoke-SSH 'systemctl reload apache2'

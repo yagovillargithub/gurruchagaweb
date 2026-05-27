@@ -112,6 +112,10 @@ El API devuelve `{ok:true}` solo si Stalwart aceptó MAIL FROM/RCPT TO/DATA con 
 
 El vhost `:80` tenía `RewriteEngine On` **dentro del `<Directory>`**, no a nivel vhost. Certbot añadió su `RewriteRule … [R=permanent]` a nivel vhost, pero como rewrite no estaba activo ahí, el rule se silenciaba. **Fix**: el vhost ahora tiene `RewriteEngine On` arriba + el redirect explícito al final del bloque, replicado en `deploy/apache-demogurru.conf` para que sobreviva re-deploys (certbot solo lo añade la primera vez).
 
+### `certbot --expand` corrompió el `-le-ssl.conf` (2026-05-26)
+
+Al añadir `gurruchagaweb.com` y `www.gurruchagaweb.com` al cert con `certbot --apache --expand`, certbot detectó la nueva regla canonical en el `:80` vhost y la copió **comentada** al `-le-ssl.conf` "por miedo a loops", duplicando además bloques `<VirtualHost>`. **Fix**: el `-le-ssl.conf` ahora también está **versionado** en [`deploy/apache-demogurru-le-ssl.conf`](../deploy/apache-demogurru-le-ssl.conf) y `Step-Apache` lo sube cada vez (skip solo si el cert aún no existe). Tras cualquier `certbot --expand` futuro, **siempre** re-correr `pwsh deploy/deploy.ps1 -Step apache` para restaurar el SSL vhost limpio. Detalle: [`docs/changelog/2026-05-26_migracion-gurruchagaweb-com.md`](changelog/2026-05-26_migracion-gurruchagaweb-com.md).
+
 ### Stalwart aparece como `unhealthy` en `docker ps`
 
 Cosmético. Healthcheck mal calibrado del compose, no afecta a la entrega. Ver [`../../UNLIMITED_AI_BRAIN/compartido/02-mail-server-stalwart.md`](../../UNLIMITED_AI_BRAIN/compartido/02-mail-server-stalwart.md) §9.3 / §10.
@@ -141,7 +145,8 @@ Es exactamente la intención. Si querés persistencia más allá de borrar cooki
 | Qué | Dónde |
 |---|---|
 | Script PowerShell de deploy demogurru | `deploy/deploy.ps1` |
-| Apache vhost demogurru (fuente de verdad) | `deploy/apache-demogurru.conf` |
+| Apache vhost demogurru `:80` (fuente de verdad) | `deploy/apache-demogurru.conf` |
+| Apache vhost demogurru `:443` SSL (fuente de verdad) | `deploy/apache-demogurru-le-ssl.conf` |
 | systemd unit API demogurru | `deploy/demogurru-api.service` |
 | README operativo demogurru | `deploy/README.md` |
 | Script PowerShell de deploy Modular | `MODULAR/deploy/deploy.ps1` |
