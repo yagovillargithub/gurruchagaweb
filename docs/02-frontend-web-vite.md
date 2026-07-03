@@ -26,6 +26,7 @@
 Centraliza todo lo "configurable sin tocar componentes":
 
 - `ESTUDIO`: nombre, WhatsApp (`5492954272523`), `whatsappLink`, redes, email, ciudad, etc. Cambiar aquí y redesplegar `-Step frontend`.
+  - `ESTUDIO.instagram` (desde 2026-07-03: `@gurruchaga3d`, tomado del front legacy; pendiente confirmar con arancha). Alimenta **dos** consumidores: el banner `InstagramBanner` de la home y la fila de Instagram en Contacto. Vacío = ninguno se renderiza (sin enlace roto).
 - `CATEGORIAS`: ids y labels de filtros del Expositor.
 - `PROYECTOS`: array de `{ id, titulo, categoria, anio, img, lugar }`. Las imágenes referenciadas con `/assets/proyectos/<file>.jpg` viven en `web/public/assets/proyectos/` (y, una vez deployadas, en `/var/www/demogurru/web/assets/proyectos/` — el API las lee de ahí para adjuntarlas al correo).
 - `MODULAR`: `{ nombre, url, descriptor }`. El teaser de la home enlaza a `MODULAR.url` con `target="_blank"`.
@@ -83,6 +84,14 @@ Ticker que recorre `['ver', 'creer', 'diseñar', 'fabricar', 'habitar']` en bucl
 - **Sin separador-punto** entre palabras: el espacio (`gap`) lo da la flex layout, no un `<span class="dot">`.
 - Tipografía controlada por `<html data-marquee>` (4 valores). Default `sansplana` = Manrope 700 + `transform: scaleY(0.82)`.
 - **Tamaño deliberadamente contenido**: `font-size: clamp(1.1rem, 2vw, 1.7rem)` + padding vertical `.5rem`. El cliente lo quiere como **banner sutil de cierre** del primer viewport — si lo subes deja de caber sobre el fold y rompes la composición Landing → Carrusel → Marquee → (resto al scroll).
+
+### Banner de Instagram — `components/InstagramBanner.jsx` (2026-07-03)
+
+Banner ancho justo debajo del carrusel de la home (el público objetivo es muy activo en Instagram y entra desde el celular). Todo el banner es un único `<a target="_blank" rel="noopener">` al perfil. Contenedor en tokens del sitio (respeta paletas/Tweaks); el chip del ícono usa el **degradado oficial de Instagram** como único acento ajeno — deliberado, para reconocimiento instantáneo. En ≤640px pasa a columna centrada. Se oculta solo si `ESTUDIO.instagram` está vacío. CSS en `extras.css` (§ "Banner Instagram").
+
+### Firma "Unlimited" — `UnlimitedSignature` en `components/SiteFooter.jsx` (2026-07-03)
+
+Franja mínima (~90px) tras el footer en las tres páginas: *"¿Te gustó esta web?" · "La hicimos en Unlimited Systems" · botón "Conocé Unlimited →"* hacia `https://unlimited-systems.net` (nueva pestaña). Estética **deliberadamente ajena** al sitio: fondo `#0a0a0a` fijo y sans de sistema, con colores hardcoded para que NO reaccione a paletas ni al panel de Tweaks. Vive dentro de `SiteFooter.jsx` (mismo fragment) para aparecer en toda la web sin tocar cada página. CSS en `extras.css` (§ "Firma Unlimited").
 
 ### Lightbox compartido — `components/Lightbox.jsx`
 
@@ -143,6 +152,8 @@ Detalle del flow completo en [`03-api-contacto-node.md`](03-api-contacto-node.md
 | Sistema Tweaks (estado + hook + applyToRoot) | `web/src/tweaks/TweaksContext.jsx` |
 | Panel de Tweaks (UI drawer) | `web/src/tweaks/TweaksPanel.jsx` |
 | Carrusel multivariante | `web/src/components/Carousel.jsx` |
+| Banner Instagram (home, bajo el carrusel) | `web/src/components/InstagramBanner.jsx` |
+| Firma Unlimited (tras el footer, todas las páginas) | `web/src/components/SiteFooter.jsx` (función `UnlimitedSignature`) |
 | Marquee | `web/src/components/TaglineMarquee.jsx` |
 | Lightbox compartido | `web/src/components/Lightbox.jsx` |
 | Tokens base (vars CSS, paletas) | `web/src/styles/tokens.css` |

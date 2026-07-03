@@ -4,6 +4,7 @@ import { ESTUDIO } from '../data/site.js';
 export default function SiteFooter() {
   const yr = new Date().getFullYear();
   return (
+    <>
     <footer className="site-footer">
       <div className="col">
         <h4>AG-studio</h4>
@@ -70,5 +71,29 @@ export default function SiteFooter() {
         <span>Diseño y fabricación de mobiliario</span>
       </div>
     </footer>
+    {/* La firma va pegada tras el footer en todas las páginas. */}
+    <UnlimitedSignature />
+    </>
+  );
+}
+
+// Firma discreta del estudio que construyó la web. Estética deliberadamente
+// ajena a la paleta AG (fondo casi negro fijo, sans de sistema): es un portal
+// hacia Unlimited, no parte del universo visual del taller. Colores hardcoded
+// a propósito — no debe reaccionar al panel de Tweaks ni a las paletas.
+function UnlimitedSignature() {
+  return (
+    <aside className="unlimited-signature">
+      <p className="unlimited-hook">¿Te gustó esta web?</p>
+      <p className="unlimited-sub">La hicimos en Unlimited Systems</p>
+      <a
+        className="unlimited-link"
+        href="https://unlimited-systems.net"
+        target="_blank"
+        rel="noopener"
+      >
+        Conocé Unlimited →
+      </a>
+    </aside>
   );
 }

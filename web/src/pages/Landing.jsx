@@ -6,6 +6,7 @@ import SiteHeader from '../components/SiteHeader.jsx';
 import SiteFooter from '../components/SiteFooter.jsx';
 import TaglineMarquee from '../components/TaglineMarquee.jsx';
 import Carousel from '../components/Carousel.jsx';
+import InstagramBanner from '../components/InstagramBanner.jsx';
 import Lightbox from '../components/Lightbox.jsx';
 import { ESTUDIO, PROYECTOS, CAROUSEL, CATEGORIAS, MODULAR } from '../data/site.js';
 import { useTweaks } from '../tweaks/TweaksContext.jsx';
@@ -44,6 +45,10 @@ export default function Landing() {
           <strong>Proyectos realizados</strong> por AG-studio · todas las imágenes son obra propia
         </p>
       </section>
+
+      {/* Instagram primero: el público objetivo vive ahí. Banner visible
+          nada más pasar el carrusel, protagonista en mobile. */}
+      <InstagramBanner />
 
       <Lightbox
         items={PROYECTOS}
