@@ -5,7 +5,7 @@ import { Mail, MessageCircle, ArrowRight, Paperclip } from 'lucide-react';
 import SiteHeader from '../components/SiteHeader.jsx';
 import SiteFooter from '../components/SiteFooter.jsx';
 import Lightbox from '../components/Lightbox.jsx';
-import { CATEGORIAS, PROYECTOS, ESTUDIO } from '../data/site.js';
+import { CATEGORIAS, PROYECTOS, ESTUDIO, FEATURE_LAYOUT } from '../data/site.js';
 
 export default function Expositor() {
   const navigate = useNavigate();
@@ -37,10 +37,16 @@ export default function Expositor() {
     return m;
   }, []);
 
-  const filtered = useMemo(
-    () => (cat === 'todos' ? PROYECTOS : PROYECTOS.filter((p) => p.categoria === cat)),
-    [cat],
-  );
+  const filtered = useMemo(() => {
+    const base = cat === 'todos' ? PROYECTOS : PROYECTOS.filter((p) => p.categoria === cat);
+    // Hoist featured items al frente del array. Con grid-auto-flow:dense + las
+    // posiciones explícitas (grid-column/grid-row) del CSS, esto garantiza
+    // que los destacados se sitúan donde indique FEATURE_LAYOUT y que el
+    // resto de tiles fluyen rellenando los huecos restantes.
+    const featured = base.filter((p) => FEATURE_LAYOUT[p.id]);
+    const rest = base.filter((p) => !FEATURE_LAYOUT[p.id]);
+    return [...featured, ...rest];
+  }, [cat]);
 
   const goToContactWithRef = (item) => {
     setOpen(null);
@@ -60,21 +66,17 @@ export default function Expositor() {
     <>
       <SiteHeader />
 
-      <section className="hero" style={{ paddingBottom: '1rem' }}>
+      <section className="hero" style={{ paddingTop: 'clamp(1.5rem, 3vw, 2.5rem)', paddingBottom: '1rem' }}>
         <div className="shell">
-          <div className="hero-eyebrow">
-            <span className="eyebrow">Expositor / Trabajos</span>
-            <span className="eyebrow">{filtered.length} proyectos</span>
-          </div>
           <motion.h1
             className="hero-title"
-            style={{ fontSize: 'clamp(3rem, 8vw, 7rem)' }}
+            style={{ fontSize: 'clamp(2.25rem, 6vw, 5rem)' }}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
             <span className="word-1">expositor</span>
-            <span className="word-2" style={{ paddingLeft: 'clamp(2rem, 8vw, 6rem)' }}>
+            <span className="word-2" style={{ paddingLeft: 'clamp(1.5rem, 6vw, 4.5rem)' }}>
               de obra.
             </span>
           </motion.h1>
@@ -108,10 +110,35 @@ export default function Expositor() {
             </p>
           ) : (
             <div className="mosaic">
-              {filtered.map((p, i) => (
+              {filtered.map((p, i) => {
+                // EAGER_COUNT cubre las tiles que entran en el primer viewport.
+                // Los destacados (FEATURE_LAYOUT) también se fuerzan a eager
+                // aunque queden fuera de las primeras N porque son grandes y
+                // están en el top del grid (mucha área visible que llenar).
+                const EAGER_COUNT = 24;
+                const feat = FEATURE_LAYOUT[p.id];
+                const isPinned = feat && feat.col !== undefined;
+                const isEager = i < EAGER_COUNT || !!feat;
+                // Los pineados llevan grid-column/row inline para "anclarlos"
+                // a una posición concreta del top. Los auto-spread no llevan
+                // inline style — su clase feat-* aporta el span y dejan que
+                // grid-auto-flow:dense decida dónde caen.
+                const shapeSpan = feat?.shape === 'big' || feat?.shape === 'wide' ? 2 : 1;
+                const rowSpan = feat?.shape === 'big' || feat?.shape === 'tall' ? 2 : 1;
+                const tileStyle = isPinned
+                  ? {
+                      gridColumn: `${feat.col} / span ${shapeSpan}`,
+                      gridRow: `${feat.row} / span ${rowSpan}`,
+                    }
+                  : undefined;
+                const classes = ['tile'];
+                if (feat?.shape) classes.push(`feat-${feat.shape}`);
+                if (isPinned) classes.push('is-pinned');
+                return (
                 <motion.button
                   key={p.id}
-                  className="tile"
+                  className={classes.join(' ')}
+                  style={tileStyle}
                   onClick={() => setOpen(i)}
                   type="button"
                   aria-label={`Abrir ${p.titulo}`}
@@ -119,7 +146,13 @@ export default function Expositor() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.45, delay: Math.min(i * 0.04, 0.3) }}
                 >
-                  <img src={p.img} alt={p.titulo} loading="lazy" />
+                  <img
+                    src={p.img}
+                    alt={p.titulo}
+                    loading={isEager ? 'eager' : 'lazy'}
+                    fetchpriority={isEager ? 'high' : 'low'}
+                    decoding="async"
+                  />
                   <span className="meta">
                     <span>
                       <span className="cat">
@@ -138,7 +171,8 @@ export default function Expositor() {
                     </span>
                   </span>
                 </motion.button>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -149,9 +183,10 @@ export default function Expositor() {
         openIndex={open}
         onClose={() => setOpen(null)}
         onChange={setOpen}
-        captionFor={(p) =>
-          `${p.titulo} · ${CATEGORIAS.find((c) => c.id === p.categoria)?.label} · ${p.anio}`
-        }
+        captionFor={(p) => {
+          const cat = CATEGORIAS.find((c) => c.id === p.categoria)?.label;
+          return [p.titulo, cat, p.anio].filter(Boolean).join(' · ');
+        }}
         cta={(item) => (
           <>
             <div className="lightbox-cta-text">

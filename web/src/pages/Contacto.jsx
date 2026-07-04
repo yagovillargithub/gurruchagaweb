@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowRight, Check, AlertCircle, Paperclip, X as XIcon } from 'lucide-react';
+import { ArrowRight, Check, AlertCircle, Paperclip, X as XIcon, Instagram } from 'lucide-react';
 import SiteHeader from '../components/SiteHeader.jsx';
 import SiteFooter from '../components/SiteFooter.jsx';
 import { ESTUDIO, PROYECTOS, CATEGORIAS } from '../data/site.js';
@@ -17,10 +17,10 @@ const initialForm = {
 
 function categoriaToProyecto(cat) {
   if (cat === 'cocinas') return 'cocina';
-  if (cat === 'librerias-tv') return 'living';
-  if (cat === 'comercios') return 'comercio';
-  if (cat === 'container') return 'container';
-  if (cat === 'casas') return 'integral';
+  if (cat === 'librerias-living') return 'living';
+  if (cat === 'dormitorios') return 'dormitorio';
+  if (cat === 'placards') return 'placard';
+  if (cat === 'banos') return 'bano';
   return 'otro';
 }
 
@@ -135,19 +135,26 @@ export default function Contacto() {
                 </div>
               </a>
 
-              <a
-                className="contact-row"
-                href={ESTUDIO.facebook}
-                target="_blank"
-                rel="noreferrer"
-                style={{ textDecoration: 'none' }}
-              >
-                <img className="icon" src="/assets/icon-facebook.png" alt="" />
-                <div>
-                  <div className="label">Facebook</div>
-                  <div className="value">{ESTUDIO.facebookHandle}</div>
-                </div>
-              </a>
+              {ESTUDIO.instagram && (
+                <a
+                  className="contact-row"
+                  href={
+                    ESTUDIO.instagramUrl ||
+                    `https://instagram.com/${ESTUDIO.instagram.replace(/^@/, '')}`
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <span className="icon-circle">
+                    <Instagram size={16} aria-hidden="true" />
+                  </span>
+                  <div>
+                    <div className="label">Instagram</div>
+                    <div className="value">{ESTUDIO.instagram}</div>
+                  </div>
+                </a>
+              )}
 
               <a
                 className="contact-row"
@@ -173,12 +180,20 @@ export default function Contacto() {
                 </div>
               </div>
 
+              {/* Mapa centrado en la zona del taller (Calle Clemente José
+                  Andrada 145). Sin pin exacto: marcamos sólo un CÍRCULO DE ÁREA
+                  que además tapa la etiqueta de calle central — pedido del
+                  cliente: ubicación correcta pero sin revelar el nombre de la
+                  calle ni el punto exacto. */}
               <div className="map-frame" style={{ marginTop: '1rem', minHeight: 280 }}>
                 <iframe
-                  title="Ubicación AG Studio · Santa Rosa, La Pampa"
-                  src="https://www.openstreetmap.org/export/embed.html?bbox=-64.3%2C-36.65%2C-64.25%2C-36.6&amp;layer=mapnik&amp;marker=-36.625%2C-64.275"
-                  loading="lazy"
+                  title="Zona del taller · Santa Rosa, La Pampa"
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=-64.29674%2C-36.64159%2C-64.26274%2C-36.62259&amp;layer=mapnik"
+                  loading="eager"
+                  referrerPolicy="no-referrer-when-downgrade"
                 />
+                <span className="map-area" aria-hidden="true" />
+                <span className="map-area-label">Zona · Santa Rosa</span>
               </div>
             </div>
 
@@ -267,9 +282,9 @@ export default function Contacto() {
                     >
                       <option value="cocina">Cocina a medida</option>
                       <option value="living">Living / TV / Librería</option>
+                      <option value="dormitorio">Dormitorio</option>
                       <option value="placard">Placards / vestidor</option>
-                      <option value="comercio">Local comercial / oficina</option>
-                      <option value="container">Container habitable</option>
+                      <option value="bano">Baño</option>
                       <option value="integral">Proyecto integral</option>
                       <option value="otro">Otro</option>
                     </select>
@@ -282,7 +297,7 @@ export default function Contacto() {
                     id="mensaje"
                     value={form.mensaje}
                     onChange={onChange('mensaje')}
-                    placeholder="Medidas aprox., uso del espacio, plazos, presupuesto estimado…"
+                    placeholder="Medidas aprox., uso del espacio, plazos…"
                     required
                   />
                 </div>

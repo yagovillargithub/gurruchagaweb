@@ -52,13 +52,16 @@ export default function SiteFooter() {
           {ESTUDIO.instagram && (
             <li>
               <a
-                href={`https://instagram.com/${ESTUDIO.instagram.replace(/^@/, '')}`}
+                href={
+                  ESTUDIO.instagramUrl ||
+                  `https://instagram.com/${ESTUDIO.instagram.replace(/^@/, '')}`
+                }
                 target="_blank"
                 rel="noreferrer"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem' }}
               >
                 <Instagram size={14} aria-hidden="true" />
-                {ESTUDIO.instagram}
+                Arancha Gurruchaga · {ESTUDIO.instagram}
               </a>
             </li>
           )}

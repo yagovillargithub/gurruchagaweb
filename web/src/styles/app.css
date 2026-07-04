@@ -157,7 +157,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .ticker-track {
   display: inline-flex; align-items: center; gap: 3rem;
-  animation: ticker calc(40s / var(--carousel-speed-mult)) linear infinite;
+  /* Velocidad distinta del carrusel de fotos: el cliente pidió expresamente
+     que "el de arriba" (carrusel) y "el de abajo" (marquee) no se sientan
+     iguales. Base más corta (25s vs 60-70s) → percepción claramente más
+     ágil sobre la línea de palabras. */
+  animation: ticker calc(25s / var(--marquee-speed-mult, 1.2)) linear infinite;
   font-family: var(--font-display);
   font-style: var(--display-italic);
   font-weight: var(--display-weight);
@@ -231,16 +235,15 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .cv-paralelo .row .card.wide { aspect-ratio: 16/9; width: clamp(280px, 32vw, calc(500px * var(--carousel-h-scale))); }
 .cv-paralelo .row .card img { width: 100%; height: 100%; object-fit: cover; }
-/* Velocidades independientes por fila — defaults bajos porque a 1.0 ya iba demasiado rápido */
-.cv-paralelo .row.r1 { animation: scroll-l calc(60s / var(--carousel-speed-r1, 0.4)) linear infinite; }
-.cv-paralelo .row.r2 { animation: scroll-r calc(50s / var(--carousel-speed-r2, 0.35)) linear infinite; }
-.cv-paralelo .row.r3 { animation: scroll-l calc(70s / var(--carousel-speed-r3, 0.45)) linear infinite; }
+/* Las filas paralelo y el track infinito los mueve JS (MarqueeRow) por rAF,
+   para poder pausarlas al pasar por encima y arrastrarlas con ratón/dedo.
+   Por eso aquí NO llevan `animation`. Sólo el diagonal sigue con CSS. */
 @keyframes scroll-l { from { transform: translateX(0) } to { transform: translateX(-50%) } }
 @keyframes scroll-r { from { transform: translateX(-50%) } to { transform: translateX(0) } }
 
 /* Variant: Infinito (single row + hover scale) — usa speed-r1 */
 .cv-infinito { display: flex; gap: 1rem; }
-.cv-infinito .track { display: flex; gap: 1.25rem; animation: scroll-l calc(70s / var(--carousel-speed-r1, 0.4)) linear infinite; }
+.cv-infinito .track { display: flex; gap: 1.25rem; }
 .cv-infinito .card {
   flex: 0 0 auto;
   width: clamp(240px, 28vw, calc(460px * var(--carousel-h-scale)));
@@ -528,7 +531,30 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   position: relative;
   overflow: hidden;
 }
-.map-frame iframe { width: 100%; height: 100%; border: 0; filter: grayscale(.4) contrast(1.05); }
+.map-frame iframe { width: 100%; height: 100%; border: 0; filter: grayscale(.5) contrast(1.02); }
+/* Círculo de área sobre el mapa: indica la zona del taller y, al ir centrado,
+   cubre la etiqueta de calle del punto exacto. Sin pin (privacidad). El mapa
+   va alejado para que la calle concreta no aparezca rotulada. */
+.map-area {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(170px, 54%, 300px); aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border: 2px solid color-mix(in srgb, var(--accent) 78%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #000 25%, transparent);
+  pointer-events: none;
+}
+.map-area-label {
+  position: absolute; left: 50%; bottom: 12px;
+  transform: translateX(-50%);
+  padding: .3rem .7rem;
+  background: rgba(20, 22, 26, .72); color: #fff; backdrop-filter: blur(4px);
+  border-radius: var(--radius-chip);
+  font-family: var(--font-mono); font-size: var(--fs-eyebrow);
+  letter-spacing: .12em; text-transform: uppercase;
+  pointer-events: none;
+}
 
 /* —— Misc / utilities —— */
 .divider { height: 1px; background: var(--line); width: 100%; }

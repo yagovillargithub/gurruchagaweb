@@ -36,6 +36,21 @@
 @media (max-width: 640px) {
   .brand-mark-name { font-size: calc(1.15rem * var(--ui-scale, 1)) !important; }
 }
+/* Logo AG-studio + variantes de marca (tweak del operador). Selector con
+   especificidad reforzada (`img.brand-mark-img`) para ganar a la regla base
+   `.brand-mark img { 36×36; border-radius:50% }`, pensada para el antiguo
+   anagrama redondo. Altura controlada y sin recorte circular. */
+.brand-mark img.brand-mark-img {
+  display: block;
+  height: calc(68px * var(--ui-scale, 1));
+  width: auto;
+  max-width: 260px;
+  border-radius: 0;
+  object-fit: contain;
+}
+@media (max-width: 640px) {
+  .brand-mark img.brand-mark-img { height: calc(54px * var(--ui-scale, 1)); max-width: 200px; }
+}
 .nav-list a {
   font-size: calc(var(--fs-small) * var(--ui-scale, 1));
 }
@@ -100,6 +115,37 @@
 .cv-diagonal .card:hover img {
   transform: scale(1.04);
 }
+
+/* ─── Pulso "late" sobre algunas obras del carrusel ───
+   Pedido del cliente: que la imagen "palpite" con un pequeño zoom, como un
+   corazón latiente, para invitar a clicar. Doble latido (lub-dub) + reposo.
+   Sólo en obras clicables; respeta reduce-motion. */
+.cv-paralelo .row .card.card-pulse,
+.cv-infinito .card.card-pulse {
+  animation: card-heartbeat 2.1s ease-in-out infinite;
+  z-index: 2;
+}
+@keyframes card-heartbeat {
+  0%        { transform: scale(1); }
+  10%       { transform: scale(1.05); }
+  20%       { transform: scale(1); }
+  30%       { transform: scale(1.035); }
+  42%, 100% { transform: scale(1); }
+}
+[data-motion="reduced"] .card.card-pulse { animation: none; }
+
+/* Afford­ance de arrastre en las filas accionadas por JS: cursor de agarre y
+   sin selección de texto/imagen al arrastrar con el ratón. */
+.cv-paralelo .row,
+.cv-infinito .track {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.cv-paralelo .row:active,
+.cv-infinito .track:active { cursor: grabbing; }
+.cv-paralelo .row img,
+.cv-infinito .track img { -webkit-user-drag: none; user-drag: none; }
 
 /* Carousel arriba del todo: cuando va antes del hero */
 .carousel-section.top {
@@ -548,6 +594,62 @@
   font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--fg);
+}
+
+/* Logo picker (cabecera) ─ grid de 2x2 con miniaturas de cada variante */
+.twk-logo-row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.twk-logo-opt {
+  flex: 1 1 calc(50% - 8px);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.twk-logo-opt:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.twk-logo-opt.is-active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent);
+}
+.twk-logo-opt img {
+  width: 100%;
+  height: 44px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 3px;
+  padding: 4px;
+}
+.twk-logo-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+.twk-logo-lbl {
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  text-align: center;
+  color: var(--fg-muted);
+  letter-spacing: .04em;
 }
 
 /* Segmented control */
@@ -1075,8 +1177,10 @@
 .intro-meta {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: clamp(1rem, 2.5vw, 2rem);
+  /* Los cuatro conceptos (+20 · +1000 · 100% · AG-studio) en una sola línea
+     — pedido del cliente. En móvil sí dejamos que envuelvan. */
+  flex-wrap: nowrap;
+  gap: clamp(.85rem, 2.2vw, 2rem);
   padding-top: 1.25rem;
   margin-top: .5rem;
   border-top: 1px solid rgba(245, 243, 238, 0.18);
@@ -1107,7 +1211,7 @@
 }
 @media (max-width: 640px) {
   .intro-meta-sep { display: none; }
-  .intro-meta { gap: 1.25rem 2rem; }
+  .intro-meta { flex-wrap: wrap; gap: 1.25rem 2rem; }
 }
 
 /* Propuesta de valor breve (frase justo después de la bio): pesa más que
@@ -1128,10 +1232,18 @@
   font-weight: 600;
   color: var(--accent);
 }
-.intro-meta-ver-creer .intro-meta-num {
+/* "Ver. Creer." subido al eyebrow (sustituye a "Desde 2018/2026"). Se sale
+   del estilo mono/uppercase del resto de eyebrows: lema de marca en la
+   display italic con acento. */
+.intro-eyebrow-vercreer {
+  font-family: var(--font-display);
   font-style: italic;
-  color: #f5f3ee;
+  font-size: clamp(1.05rem, 1.6vw, 1.4rem);
+  letter-spacing: .01em;
+  text-transform: none;
+  color: var(--accent);
 }
+.intro-eyebrow-vercreer em { font-style: inherit; }
 
 /* Foto figurativa debajo de cada card de servicios. Sin marco redondeado
    (pedido del cliente). Marca de agua AG aplicada vía data-watermark. */
@@ -1145,16 +1257,19 @@
   border-radius: var(--radius-card);
 }
 
-/* Logo MODULAR naranja en el card teaser — sustituye al cubito SVG.
-   Tamaño contenido para que no domine el card, pero sí destaque por color. */
+/* Logo MODULAR naranja: hace de TÍTULO del teaser (pedido del cliente).
+   Grande y prominente, sobre tarjeta clara para que el texto oscuro del
+   logo resalte sobre el fondo del teaser. */
 .modular-card-logo {
   display: block;
-  max-width: 180px;
-  width: 100%;
+  width: clamp(220px, 32vw, 320px);
+  max-width: 100%;
   height: auto;
   background: #fff;
-  padding: .65rem .9rem;
-  border-radius: 6px;
+  padding: .9rem 1.2rem;
+  border-radius: 8px;
+  margin: .15rem 0 .25rem;
+  box-shadow: 0 8px 24px color-mix(in srgb, #000 18%, transparent);
 }
 
 /* Sección about ("Diseñar es ver antes de creer") — la usuaria pidió
@@ -1193,7 +1308,6 @@
   letter-spacing: .04em;
   color: var(--accent);
 }
-
 [data-motion="reduced"] .intro-badge-dot {
   animation: none;
 }
@@ -1223,7 +1337,7 @@
 .modular-card {
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: clamp(1rem, 3vw, 2.5rem);
   padding: clamp(1.5rem, 3vw, 2.5rem);
@@ -1253,23 +1367,6 @@
 .modular-card:hover::after {
   transform: scaleY(1);
   transform-origin: top;
-}
-.modular-card-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: clamp(64px, 8vw, 88px);
-  height: clamp(64px, 8vw, 88px);
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  color: var(--fg);
-  background: var(--bg-elev);
-  flex-shrink: 0;
-  transition: color .3s ease, border-color .3s ease, background .3s ease;
-}
-.modular-card:hover .modular-card-mark {
-  color: var(--accent);
-  border-color: var(--accent);
 }
 .modular-card-body { display: grid; gap: .55rem; }
 .modular-eyebrow {
@@ -1337,7 +1434,6 @@
 }
 
 [data-motion="reduced"] .modular-card,
-[data-motion="reduced"] .modular-card-mark,
 [data-motion="reduced"] .modular-card-cta,
 [data-motion="reduced"] .modular-cta-arrow,
 [data-motion="reduced"] .modular-card::after {
@@ -1361,11 +1457,13 @@
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('/assets/logo-anagrama.png');
+  /* Logotipo oficial AG-studio en blanco (mismo que la cabecera). Pedido
+     del cliente: usar este logo como marca de agua en carrusel y galería. */
+  background-image: url('/assets/logo-ag-watermark.png');
   background-repeat: repeat;
-  background-size: 90px 90px;
+  background-size: 104px 100px;
   background-position: center;
-  opacity: 0.14;
+  opacity: 0.16;
   mix-blend-mode: overlay;
   pointer-events: none;
   z-index: 3;
@@ -1463,94 +1561,6 @@
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 0 3px rgba(0, 255, 153, 0.12);
-}
-
-/* ─── Banner Instagram bajo el carrusel (home) ───────────────────────────
-   Protagonista nada más cargar: contenedor en tokens del sitio (respeta
-   paleta/tweaks) + chip del ícono con el degradado oficial de Instagram
-   como único acento ajeno — reconocible al instante para el público IG. */
-.ig-banner-section {
-  padding: clamp(1.1rem, 2.5vw, 1.75rem) 0 0;
-}
-.ig-banner {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: .85rem 1.1rem .85rem .9rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-button);
-  background: var(--bg-elev);
-  color: var(--fg);
-  text-decoration: none;
-  transition: border-color .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease);
-}
-.ig-banner:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
-}
-.ig-banner-icon {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  color: #fff;
-  /* Degradado oficial IG — acento deliberado, no forma parte de la paleta. */
-  background: radial-gradient(circle at 30% 110%,
-    #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
-}
-.ig-banner-text {
-  display: grid;
-  gap: .15rem;
-  min-width: 0;
-}
-.ig-banner-title {
-  font-size: clamp(1rem, 1.4vw, 1.15rem);
-  font-weight: 700;
-  letter-spacing: .01em;
-  line-height: 1.2;
-}
-.ig-banner-sub {
-  font-size: var(--fs-small);
-  color: var(--fg-muted);
-  line-height: 1.3;
-}
-.ig-banner-cta {
-  flex: 0 0 auto;
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  padding: .5rem 1rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-button);
-  font-family: var(--font-mono);
-  font-size: var(--fs-small);
-  letter-spacing: .06em;
-  color: var(--fg);
-  white-space: nowrap;
-  transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
-}
-.ig-banner:hover .ig-banner-cta {
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
-}
-/* Mobile: columna centrada — el handle/CTA pasa a botón de ancho natural
-   bien tocable. Es donde más se juega este banner. */
-@media (max-width: 640px) {
-  .ig-banner {
-    flex-direction: column;
-    text-align: center;
-    gap: .75rem;
-    padding: 1.15rem 1rem;
-    border-radius: var(--radius);
-  }
-  .ig-banner-text { justify-items: center; }
-  .ig-banner-cta { margin-left: 0; }
 }
 
 /* ─── Firma "Unlimited" tras el footer ───────────────────────────────────

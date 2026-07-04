@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
 
-const STORAGE_KEY = 'gurru:tweaks:v5';
+const STORAGE_KEY = 'gurru:tweaks:v6';
 const PRESETS_KEY = 'gurru:tweaks:presets:v1';
 
 export const DEFAULTS = {
@@ -30,6 +30,12 @@ export const DEFAULTS = {
 
   // Marca de agua sobre las imágenes
   watermark: true,
+
+  // Logo de cabecera. 'ag-studio' (default) muestra el logotipo oficial
+  // AG-studio (lockup crema); 'texto' lo deja tipográfico; las opciones
+  // 'arancha-*' muestran las variantes de marca personal que el cliente
+  // pidió poder probar en vivo.
+  brandLogo: 'ag-studio', // 'ag-studio' | 'texto' | 'arancha-azul' | 'arancha-crema' | 'arancha-variantes'
 
   // Hero customizer "arancha gurruchaga"
   heroLayout: 'cascade',          // cascade | stacked | inline | split | mirror
@@ -194,10 +200,25 @@ function defaultPresetName() {
   return `Mi plantilla · ${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+// Nº de clics en la cabecera necesarios para revelar el botón de Tweaks.
+// Por defecto el FAB está OCULTO (pedido del operador): es una herramienta
+// interna, no debe verla el visitante. Se desbloquea como "easter egg"
+// haciendo HEADER_UNLOCK_CLICKS clics en la cabecera. El desbloqueo es por
+// sesión (no se persiste): cada carga arranca oculto de nuevo.
+const HEADER_UNLOCK_CLICKS = 15;
+
 export function TweaksProvider({ children }) {
   const [tweaks, setTweaks] = useState(() => readStored() ?? DEFAULTS);
   const [presets, setPresets] = useState(() => readPresets());
   const [open, setOpen] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+  const headerClicksRef = useRef(0);
+
+  const bumpHeaderClicks = useCallback(() => {
+    if (headerClicksRef.current >= HEADER_UNLOCK_CLICKS) return;
+    headerClicksRef.current += 1;
+    if (headerClicksRef.current >= HEADER_UNLOCK_CLICKS) setUnlocked(true);
+  }, []);
 
   useEffect(() => {
     applyToRoot(tweaks);
@@ -275,8 +296,10 @@ export function TweaksProvider({ children }) {
       openPanel,
       closePanel,
       togglePanel,
+      unlocked,
+      bumpHeaderClicks,
     }),
-    [tweaks, setKey, setAll, reset, presets, addPreset, removePreset, applyPreset, open, openPanel, closePanel, togglePanel],
+    [tweaks, setKey, setAll, reset, presets, addPreset, removePreset, applyPreset, open, openPanel, closePanel, togglePanel, unlocked, bumpHeaderClicks],
   );
 
   return <TweaksCtx.Provider value={value}>{children}</TweaksCtx.Provider>;

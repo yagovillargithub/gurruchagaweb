@@ -71,11 +71,21 @@ const ACCENT_PRESETS = [
   '#6b85a0', '#3b435c', '#1f3552', '#c08552', '#9aa888', '#d29b9b', '#1a1c1f',
 ];
 
+// Logos para probar en el header. Imágenes en /public/assets/.
+const BRAND_LOGOS = [
+  { value: 'ag-studio',          label: 'AG-studio', thumb: '/assets/logo-ag-studio.png' },
+  { value: 'texto',              label: 'Texto',     thumb: null },
+  { value: 'arancha-azul',       label: 'AG · azul', thumb: '/assets/logo-arancha-azul.png' },
+  { value: 'arancha-crema',      label: 'AG · crema', thumb: '/assets/logo-arancha-crema.png' },
+  { value: 'arancha-variantes',  label: 'Variantes', thumb: '/assets/logo-arancha-variantes.png' },
+];
+
 export default function TweaksPanel() {
   const {
     tweaks, setKey, reset,
     presets, addPreset, removePreset, applyPreset,
     open, openPanel, closePanel,
+    unlocked,
   } = useTweaks();
 
   const [presetsOpen, setPresetsOpen] = useState(false);
@@ -147,6 +157,11 @@ export default function TweaksPanel() {
       setErrorMsg('Problema de red. Intentá de nuevo.');
     }
   }
+
+  // FAB oculto por defecto; sólo aparece tras desbloquear con 15 clics en la
+  // cabecera (ver TweaksContext). Hasta entonces no renderizamos nada — todos
+  // los hooks de arriba ya se han llamado, así que el early-return es seguro.
+  if (!unlocked) return null;
 
   return (
     <>
@@ -406,6 +421,32 @@ export default function TweaksPanel() {
               >
                 <i />
               </button>
+            </div>
+
+            {/* Logo de cabecera (probar variantes de marca arancha) */}
+            <div className="twk-sect">Logo de cabecera</div>
+            <div className="twk-row twk-logo-row">
+              {BRAND_LOGOS.map((opt) => {
+                const active = tweaks.brandLogo === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    aria-label={`Logo: ${opt.label}`}
+                    className={`twk-logo-opt ${active ? 'is-active' : ''}`}
+                    onClick={() => setKey('brandLogo', opt.value)}
+                  >
+                    {opt.thumb ? (
+                      <img src={opt.thumb} alt="" />
+                    ) : (
+                      <span className="twk-logo-text">AG-studio</span>
+                    )}
+                    <span className="twk-logo-lbl">{opt.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Sensación */}
