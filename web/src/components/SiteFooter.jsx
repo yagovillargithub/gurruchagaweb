@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Instagram } from 'lucide-react';
 import { ESTUDIO } from '../data/site.js';
 
 export default function SiteFooter() {
@@ -46,11 +47,21 @@ export default function SiteFooter() {
               WhatsApp · {ESTUDIO.whatsapp}
             </a>
           </li>
-          <li>
-            <a href={ESTUDIO.facebook} target="_blank" rel="noreferrer">
-              Facebook · {ESTUDIO.facebookHandle}
-            </a>
-          </li>
+          {/* Instagram discreto en el footer (decisión: nada prominente arriba).
+              Mismo contrato que la fila de Contacto: handle vacío = no se pinta. */}
+          {ESTUDIO.instagram && (
+            <li>
+              <a
+                href={`https://instagram.com/${ESTUDIO.instagram.replace(/^@/, '')}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem' }}
+              >
+                <Instagram size={14} aria-hidden="true" />
+                {ESTUDIO.instagram}
+              </a>
+            </li>
+          )}
           <li>
             <a href={`mailto:${ESTUDIO.email}`}>{ESTUDIO.email}</a>
           </li>

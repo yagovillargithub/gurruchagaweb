@@ -4,17 +4,20 @@ import { motion } from 'framer-motion';
 import { ArrowRight, ArrowUpRight, LayoutGrid } from 'lucide-react';
 import SiteHeader from '../components/SiteHeader.jsx';
 import SiteFooter from '../components/SiteFooter.jsx';
-import TaglineMarquee from '../components/TaglineMarquee.jsx';
 import Carousel from '../components/Carousel.jsx';
-import InstagramBanner from '../components/InstagramBanner.jsx';
 import Lightbox from '../components/Lightbox.jsx';
 import { ESTUDIO, PROYECTOS, CAROUSEL, CATEGORIAS, MODULAR } from '../data/site.js';
 import { useTweaks } from '../tweaks/TweaksContext.jsx';
 
+// Fade-up que dispara siempre al montar (no por scroll). El whileInView con
+// IntersectionObserver es frágil en captures full-page y en algunos casos deja
+// secciones por debajo del fold inicial en opacity:0. Para una landing corta
+// como ésta, animar todas las secciones al montar es perfectamente aceptable:
+// el usuario las verá aparecer suavemente al cargar y nunca verá un hueco
+// vacío al hacer scroll rápido o sacar captures.
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: '-80px' },
+  animate: { opacity: 1, y: 0 },
   transition: { duration: 0.7, ease: [0.2, 0.7, 0.2, 1] },
 };
 
@@ -40,15 +43,17 @@ export default function Landing() {
 
       {/* Carrusel arriba del todo */}
       <section className="carousel-section top">
-        <Carousel variant={tweaks.carousel} items={CAROUSEL} onItemClick={openProject} />
+        <Carousel
+          variant={tweaks.carousel}
+          items={CAROUSEL}
+          onItemClick={openProject}
+          speeds={[tweaks.carouselSpeedR1, tweaks.carouselSpeedR2, tweaks.carouselSpeedR3]}
+          autoScroll={tweaks.motion !== 'reduced'}
+        />
         <p className="carousel-disclaimer">
           <strong>Proyectos realizados</strong> por AG-studio · todas las imágenes son obra propia
         </p>
       </section>
-
-      {/* Instagram primero: el público objetivo vive ahí. Banner visible
-          nada más pasar el carrusel, protagonista en mobile. */}
-      <InstagramBanner />
 
       <Lightbox
         items={PROYECTOS}
@@ -82,14 +87,14 @@ export default function Landing() {
         }}
       />
 
-      <TaglineMarquee />
-
       {/* "Página 2" — arancha presenta. Va justo después de la landing
-          (carrusel + marquee). Fusiona el hero (nombre grande) con la
-          presentación profesional + stats de cierre. Fondo de obra real
-          con overlay para contraste. TODO: cuando llegue la foto real de
-          arancha (retrato), usarla como --intro-bg en lugar del proyecto. */}
+          (carrusel). Fusiona el hero (nombre grande) con la presentación
+          profesional + stats de cierre. Fondo de obra real con overlay para
+          contraste. El logo AG-studio de la cabecera ancla aquí (#arancha).
+          TODO: cuando llegue la foto real de arancha (retrato), usarla como
+          --intro-bg en lugar del proyecto. */}
       <section
+        id="arancha"
         className="intro-section"
         style={{ '--intro-bg': "url('/assets/proyectos/libreria-living-001.webp')" }}
       >
@@ -104,8 +109,8 @@ export default function Landing() {
               <span className="intro-badge-dot" aria-hidden="true" />
               AG-studio · {ESTUDIO.ciudad}
             </span>
-            <span className="intro-eyebrow">
-              Desde {ESTUDIO.desde} / {new Date().getFullYear()}
+            <span className="intro-eyebrow intro-eyebrow-vercreer">
+              <em>Ver. Creer.</em>
             </span>
           </div>
 
@@ -121,8 +126,7 @@ export default function Landing() {
               (formación bellas artes, cientos de trabajos en España y aquí). */}
           <p className="intro-lede">
             Larga trayectoria en <strong>diseño de interiores y mobiliario a medida</strong>.
-            Cientos de obras realizadas en España y otras tantas aquí, en la última
-            década. Formación en distintas áreas de las bellas artes —
+            Formación en distintas áreas de las bellas artes —
             <strong> arquitectura, diseño industrial</strong> y dirección de obra — que se
             traducen en proyectos que duran.
           </p>
@@ -152,10 +156,6 @@ export default function Landing() {
             <div className="intro-meta-item">
               <span className="intro-meta-num">AG-studio</span>
               <span className="intro-meta-lbl">diseño · oficio</span>
-            </div>
-            <div className="intro-meta-sep" aria-hidden="true" />
-            <div className="intro-meta-item intro-meta-ver-creer">
-              <span className="intro-meta-num"><em>Ver. Creer.</em></span>
             </div>
           </div>
         </motion.div>
@@ -200,8 +200,8 @@ export default function Landing() {
               <span className="num">02 / Producción</span>
               <h3>Carpintería Rosignolo</h3>
               <p>
-                Socios productivos con toda una vida en La Pampa. Taller industrial
-                perfectamente equipado: carpintería, melamina, laqueados y maderas
+                Socios productivos con todo un desarrollo en La Pampa. Taller
+                industrial perfectamente equipado: carpintería, melamina y maderas
                 macizas.
               </p>
               <img
@@ -220,7 +220,7 @@ export default function Landing() {
               </p>
               <img
                 className="service-photo"
-                src="/assets/foto-card-obra.png"
+                src="/assets/foto-card-obra.webp"
                 alt=""
                 loading="lazy"
               />
@@ -274,20 +274,16 @@ export default function Landing() {
             rel="noopener"
             {...fadeUp}
           >
-            <div className="modular-card-mark" aria-hidden="true">
-              {/* Logo MODULAR naranja oficial — diferenciado del azul AG-studio
-                  porque Modular es un producto propio con su propia identidad. */}
+            <div className="modular-card-body">
+              <span className="eyebrow modular-eyebrow">Novedad · línea nueva</span>
+              {/* El propio logotipo MODULAR hace de título (pedido del cliente):
+                  más grande y prominente, sobre tarjeta clara para legibilidad
+                  sobre el fondo oscuro del teaser. */}
               <img
                 className="modular-card-logo"
                 src="/assets/logo-modular-naranja.png"
-                alt=""
+                alt="Modular · diseño funcional en melamina"
               />
-            </div>
-            <div className="modular-card-body">
-              <span className="eyebrow modular-eyebrow">Novedad · línea nueva</span>
-              <h3 className="modular-title">
-                Modular<em>.</em>
-              </h3>
               <p className="modular-lede">
                 Estamos desarrollando una <strong>línea nueva de muebles modulares</strong>:
                 cocina, baño y placard. Sistema configurable, pensado para crecer con tu espacio.
