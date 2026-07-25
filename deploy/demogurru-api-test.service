@@ -1,0 +1,30 @@
+[Unit]
+Description=Demogurru contact API - TEST instance (Express + nodemailer)
+After=network-online.target
+Wants=network-online.target
+# Nota: la unit de PROD ademas espera al contenedor del mail server
+# (After=... <mail-container>.service). Para la instancia de TEST no es
+# imprescindible: Restart=on-failure reintenta si el SMTP aun no esta listo.
+# Si se quiere paridad total con prod, root puede anadir esa dependencia.
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/demogurru-api-test
+# Capas de entorno: PROD aporta la credencial SMTP (fuente unica, sin copias);
+# el .env de TEST va DESPUES y pisa todo lo demas (puerto, MAIL_TO, origenes...).
+EnvironmentFile=/opt/demogurru-api/.env
+EnvironmentFile=/opt/demogurru-api-test/.env
+ExecStart=/usr/bin/node /opt/demogurru-api-test/server.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
