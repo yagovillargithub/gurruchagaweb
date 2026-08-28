@@ -73,11 +73,11 @@ const ACCENT_PRESETS = [
 
 // Logos para probar en el header. Imágenes en /public/assets/.
 const BRAND_LOGOS = [
-  { value: 'ag-studio',          label: 'AG-studio', thumb: '/assets/logo-ag-studio.png' },
+  { value: 'ag-studio',          label: 'AG-studio', thumb: '/assets/logo-ag-studio.webp' },
   { value: 'texto',              label: 'Texto',     thumb: null },
-  { value: 'arancha-azul',       label: 'AG · azul', thumb: '/assets/logo-arancha-azul.png' },
-  { value: 'arancha-crema',      label: 'AG · crema', thumb: '/assets/logo-arancha-crema.png' },
-  { value: 'arancha-variantes',  label: 'Variantes', thumb: '/assets/logo-arancha-variantes.png' },
+  { value: 'arancha-azul',       label: 'AG · azul', thumb: '/assets/logo-arancha-azul.webp' },
+  { value: 'arancha-crema',      label: 'AG · crema', thumb: '/assets/logo-arancha-crema.webp' },
+  { value: 'arancha-variantes',  label: 'Variantes', thumb: '/assets/logo-arancha-variantes.webp' },
 ];
 
 export default function TweaksPanel() {

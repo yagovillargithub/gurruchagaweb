@@ -1,4 +1,5 @@
 import { useMemo, useRef, useEffect, useLayoutEffect } from 'react';
+import useAutoplayInteraction from '../hooks/useAutoplayInteraction.js';
 
 // MIN_PER_ROW: cada fila base se rellena hasta este nº de items para que,
 // duplicada con [...row, ...row] y con el transform translate(-50%), no haya
@@ -19,6 +20,8 @@ function pad(arr, min, src) {
 // El track lleva los items duplicados ([...row,...row]); el offset se envuelve
 // por la mitad del ancho (una copia) para un bucle continuo sin saltos.
 // touch-action:pan-y deja libre el scroll vertical de la página en móvil.
+// La pausa por interacción vive AQUÍ (una instancia del hook por fila) y no en
+// el contenedor: mirar una obra debe detener sólo su fila, las demás siguen.
 function MarqueeRow({
   className,
   direction = 'left',
@@ -27,13 +30,22 @@ function MarqueeRow({
   autoScroll = true,
   children,
 }) {
+  const { isPaused, interactionProps } = useAutoplayInteraction();
+  // Desestructurado explícito: los 4 handlers de puntero se componen a mano con
+  // la lógica de arrastre; el resto (enter/leave, click, touch) va por spread.
+  const {
+    onPointerDown: pauseDown,
+    onPointerMove: pauseMove,
+    onPointerUp: pauseUp,
+    onPointerCancel: pauseCancel,
+    ...pauseProps
+  } = interactionProps;
   const elRef = useRef(null);
   const st = useRef({
     offset: 0,
     half: 1,
     raf: 0,
     last: 0,
-    hover: false,
     inited: false,
     drag: { active: false, startX: 0, startOffset: 0, moved: false, id: null },
   });
@@ -71,7 +83,7 @@ function MarqueeRow({
       const last = s.last || ts;
       const dt = Math.min(0.05, (ts - last) / 1000);
       s.last = ts;
-      if (autoScroll && !s.hover && !s.drag.active && s.half > 1) {
+      if (autoScroll && !isPaused && !s.drag.active && s.half > 1) {
         const v = (s.half / baseSeconds) * speed; // px/s — replica el ritmo CSS
         s.offset = wrap(s.offset + sign * v * dt, s.half);
       }
@@ -80,7 +92,7 @@ function MarqueeRow({
     };
     s.raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(s.raf);
-  }, [direction, baseSeconds, speed, autoScroll]);
+  }, [direction, baseSeconds, speed, autoScroll, isPaused]);
 
   const onPointerDown = (e) => {
     const s = st.current;
@@ -128,12 +140,11 @@ function MarqueeRow({
       ref={elRef}
       className={className}
       style={{ touchAction: 'pan-y' }}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
-      onMouseEnter={() => { st.current.hover = true; }}
-      onMouseLeave={() => { st.current.hover = false; st.current.last = 0; }}
+      {...pauseProps}
+      onPointerDown={(e) => { pauseDown(e); onPointerDown(e); }}
+      onPointerMove={(e) => { pauseMove(e); onPointerMove(e); }}
+      onPointerUp={(e) => { pauseUp(e); endDrag(); }}
+      onPointerCancel={(e) => { pauseCancel(e); endDrag(); }}
       onClickCapture={onClickCapture}
       onDragStart={(e) => e.preventDefault()}
     >
@@ -160,12 +171,34 @@ function CarouselCard({ it, extraClass = '', onItemClick, showLabel = false, pul
   );
 }
 
+// El contenedor ya NO pausa: cada fila gestiona su propia pausa (ver MarqueeRow
+// y DiagonalRow), de modo que detener una fila no congela a sus hermanas.
 export default function Carousel({ variant = 'paralelo', items = [], onItemClick, speeds, autoScroll = true }) {
-  if (variant === 'diagonal') return <CarouselDiagonal items={items} onItemClick={onItemClick} />;
-  if (variant === 'infinito') {
-    return <CarouselInfinito items={items} onItemClick={onItemClick} speeds={speeds} autoScroll={autoScroll} />;
+  let content;
+
+  if (variant === 'diagonal') {
+    content = <CarouselDiagonal items={items} onItemClick={onItemClick} />;
+  } else if (variant === 'infinito') {
+    content = (
+      <CarouselInfinito
+        items={items}
+        onItemClick={onItemClick}
+        speeds={speeds}
+        autoScroll={autoScroll}
+      />
+    );
+  } else {
+    content = (
+      <CarouselParalelo
+        items={items}
+        onItemClick={onItemClick}
+        speeds={speeds}
+        autoScroll={autoScroll}
+      />
+    );
   }
-  return <CarouselParalelo items={items} onItemClick={onItemClick} speeds={speeds} autoScroll={autoScroll} />;
+
+  return <div className="carousel-interaction">{content}</div>;
 }
 
 function CarouselParalelo({ items, onItemClick, speeds, autoScroll }) {
@@ -240,6 +273,20 @@ function CarouselInfinito({ items, onItemClick, speeds, autoScroll }) {
   );
 }
 
+// La diagonal sigue animándose con CSS: la pausa es la clase `is-autoplay-paused`
+// puesta en la propia fila (no en el contenedor), para no congelar a la hermana.
+function DiagonalRow({ className, children }) {
+  const { isPaused, interactionProps } = useAutoplayInteraction();
+  return (
+    <div
+      className={`${className} ${isPaused ? 'is-autoplay-paused' : ''}`.trim()}
+      {...interactionProps}
+    >
+      {children}
+    </div>
+  );
+}
+
 function CarouselDiagonal({ items, onItemClick }) {
   const [r1, r2] = useMemo(() => {
     if (!items.length) return [[], []];
@@ -252,16 +299,16 @@ function CarouselDiagonal({ items, onItemClick }) {
 
   return (
     <div className="cv-diagonal" style={{ width: '120%', marginLeft: '-10%' }}>
-      <div className="row r1">
+      <DiagonalRow className="row r1">
         {[...r1, ...r1].map((it, i) => (
           <CarouselCard key={`a-${i}`} it={it} onItemClick={onItemClick} />
         ))}
-      </div>
-      <div className="row r2">
+      </DiagonalRow>
+      <DiagonalRow className="row r2">
         {[...r2, ...r2].map((it, i) => (
           <CarouselCard key={`b-${i}`} it={it} onItemClick={onItemClick} />
         ))}
-      </div>
+      </DiagonalRow>
     </div>
   );
 }

@@ -1,0 +1,9 @@
+# Capturas del visual-check: artefactos efimeros, no son codigo
+screenshots/
+
+# Builds de la herramienta .NET de captura
+visual-check/bin/
+visual-check/obj/
+
+# Marcador "Chromium ya instalado" — local del entorno
+visual-check/.playwright-installed

@@ -5,3 +5,7 @@ dist/
 .env.*.local
 .DS_Store
 *.log
+
+# Fuera del repo desde el 29-08-2026: material pesado que no forma parte del sitio.
+Front Generado con IA/fotos_definitivas_reescaladas/
+MODULAR/

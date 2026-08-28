@@ -81,6 +81,95 @@ function shuffle(arr) {
 
 export const CAROUSEL = shuffle(PROYECTOS).slice(0, 30);
 
+// ─── PROGRESIONES DE OBRA (tarea #295) ─────────────────────────────────────
+// Paquete «montaje obra» (2026-08): ocho proyectos reales, cada uno con su
+// secuencia de obra → montaje → terminado. Sustituye a los antiguos DESTACADOS
+// (tarea #146) y PROCESOS (tarea #248); las carpetas /assets/destacados y
+// /assets/procesos quedaron retiradas con él.
+// `tipo` y `materiales` provienen del nombre de carpeta que entregó la
+// clienta (no parafrasear). Las fases están renumeradas correlativas 01..NN en
+// /assets/progresiones/<id>-NN.webp; el orden de cada secuencia se validó
+// visualmente al importar el paquete (los sufijos «(n)» originales traían
+// huecos y alguna regeneración fuera de orden).
+// `destacada: true` marca la progresión del marco principal de presentación
+// (pedido del cliente: la cocina en termoformado Blanco Snow).
+const PROGRESION_COLLECTIONS = [
+  {
+    id: 'cocina-blanco-snow',
+    tipo: 'Cocina',
+    materiales: 'Termoformado Blanco Snow y melamina Petribí',
+    categoria: 'cocinas',
+    fases: 6,
+    destacada: true,
+  },
+  {
+    id: 'cocina-negro-matt',
+    tipo: 'Cocina',
+    materiales: 'Extreme Negro Matt y melamina Petribí',
+    categoria: 'cocinas',
+    fases: 6,
+  },
+  {
+    id: 'dormitorio-everest-tapir',
+    tipo: 'Dormitorio',
+    materiales: 'Melamina Everest y Gris Tapir',
+    categoria: 'dormitorios',
+    fases: 5,
+  },
+  {
+    id: 'escritorio-placard-everest',
+    tipo: 'Escritorio placard',
+    materiales: 'Melamina Everest y madera Paraíso',
+    categoria: 'dormitorios',
+    fases: 4,
+  },
+  {
+    id: 'libreria-everest',
+    tipo: 'Librería',
+    materiales: 'Melamina Everest',
+    categoria: 'librerias-living',
+    fases: 5,
+  },
+  {
+    id: 'libreria-everest-paraiso',
+    tipo: 'Librería',
+    materiales: 'Melamina Everest y Paraíso',
+    categoria: 'librerias-living',
+    fases: 6,
+  },
+  {
+    id: 'placard-sahara',
+    tipo: 'Placard',
+    materiales: 'Melamina Sahara y madera Paraíso',
+    categoria: 'placards',
+    fases: 6,
+  },
+  {
+    id: 'tocador-everest',
+    tipo: 'Tocador',
+    materiales: 'Melamina Everest y Paraíso',
+    categoria: 'dormitorios',
+    fases: 4,
+  },
+];
+
+export const PROGRESIONES = PROGRESION_COLLECTIONS.map((p) => ({
+  ...p,
+  titulo: `${p.tipo} · ${p.materiales}`,
+  items: Array.from({ length: p.fases }, (_, i) => {
+    const fase = String(i + 1).padStart(2, '0');
+    return {
+      id: `${p.id}-${fase}`,
+      titulo: `${p.tipo} · fase ${i + 1} de ${p.fases}`,
+      categoria: p.categoria,
+      img: `/assets/progresiones/${p.id}-${fase}.webp`,
+    };
+  }),
+}));
+
+export const PROGRESION_DESTACADA = PROGRESIONES.find((p) => p.destacada);
+export const PROGRESIONES_GALERIA = PROGRESIONES.filter((p) => !p.destacada);
+
 // ─── Layout Pinterest del expositor ────────────────────────────────────────
 //
 // Tres shapes de tile destacado, ademÃ¡s del normal 1×1 (16/9):

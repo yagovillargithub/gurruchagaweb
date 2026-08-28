@@ -3,10 +3,10 @@ import { ArrowRight } from 'lucide-react';
 import { useTweaks } from '../tweaks/TweaksContext.jsx';
 
 const LOGO_SRC = {
-  'ag-studio':          '/assets/logo-ag-studio.png',
-  'arancha-azul':       '/assets/logo-arancha-azul.png',
-  'arancha-crema':      '/assets/logo-arancha-crema.png',
-  'arancha-variantes':  '/assets/logo-arancha-variantes.png',
+  'ag-studio':          '/assets/logo-ag-studio.webp',
+  'arancha-azul':       '/assets/logo-arancha-azul.webp',
+  'arancha-crema':      '/assets/logo-arancha-crema.webp',
+  'arancha-variantes':  '/assets/logo-arancha-variantes.webp',
 };
 
 export default function SiteHeader() {
@@ -29,7 +29,7 @@ export default function SiteHeader() {
           de la home), no a la portada — pedido del cliente. */}
       <Link className="brand-mark" to="/#arancha" aria-label="AG-studio · sobre arancha GURRUCHAGA">
         {logoSrc ? (
-          <img className="brand-mark-img" src={logoSrc} alt="AG-studio · arancha GURRUCHAGA" />
+          <img className="brand-mark-img" src={logoSrc} alt="AG-studio · arancha GURRUCHAGA" decoding="async" />
         ) : (
           <span className="brand-mark-name">AG-studio</span>
         )}

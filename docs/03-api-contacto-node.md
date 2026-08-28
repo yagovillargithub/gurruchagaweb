@@ -59,7 +59,7 @@ SMTP_HOST=mail.unlimited-systems.net
 SMTP_PORT=465
 SMTP_SECURE=true
 SMTP_USER=info@unlimited-systems.net
-SMTP_PASS=lzmW3S!nAebYcVM^                            # ★ misma del admin Stalwart
+SMTP_PASS=<la del gestor de secretos del servidor; NUNCA en el repo>                            # ★ misma del admin Stalwart
 MAIL_FROM=AG Studio <info@unlimited-systems.net>
 MAIL_TO=gurru999@gmail.com
 STATIC_ROOT=/var/www/demogurru/web                    # root para resolver imágenes adjuntas
@@ -177,3 +177,32 @@ El API devuelve `{ok:true}` solo si Stalwart aceptó MAIL FROM / RCPT TO / DATA 
 - **Despliegue del API (`-Step api`)**: [`05-despliegue.md`](05-despliegue.md).
 - **Mail server (Stalwart, listeners, SMTP_PASS, troubleshooting de entrega)**: [`../../UNLIMITED_AI_BRAIN/compartido/02-mail-server-stalwart.md`](../../UNLIMITED_AI_BRAIN/compartido/02-mail-server-stalwart.md).
 - **Histórico**: [`changelog/2026-05-07_bootstrap-vite-y-api.md`](changelog/2026-05-07_bootstrap-vite-y-api.md).
+
+---
+
+## Adjuntos del visitante (tarea #297, 2026-08-17)
+
+`POST /api/contact` acepta un array opcional `adjuntos`:
+
+```json
+{ "adjuntos": [ { "nombre": "cocina.jpg", "tipo": "image/jpeg", "datos": "<base64>" } ] }
+```
+
+- Límites: 6 archivos, 8 MB por archivo y 15 MB en total. MIME en whitelist
+  (`image/jpeg|png|webp|gif|heic|heif`, `application/pdf`).
+- `/api/contact` tiene body limit propio de 24 MB (`jsonContact`); el resto de
+  rutas siguen con 32 kB (`jsonSmall`). Un payload mayor devuelve **413** con
+  mensaje en castellano.
+- `parseAdjuntos()` sanea el nombre (`path.basename` + filtrado de caracteres,
+  extensión forzada por MIME) y verifica los **magic bytes**: un `.exe`
+  declarado como imagen, o un PNG que no empieza por su firma, se descartan.
+  Lo descartado no se avisa al remitente; la respuesta indica cuántos entraron
+  (`{ ok: true, adjuntos: 2 }`).
+- El correo lista los archivos en texto y HTML, y el asunto añade
+  "· N adjuntos". Los adjuntos del visitante van **después** de la imagen de
+  referencia del flow "Quiero algo parecido" (que sigue igual, con su `cid`).
+- No se escribe nada a disco: los buffers van directos a nodemailer.
+
+**Deploy**: no añade dependencias npm. La instancia de staging
+(`demogurru-api-test`, `:3101`, `/opt/demogurru-api-test`) es de root y hay que
+copiarle el `server.js` a mano para que gurru-test acepte archivos.

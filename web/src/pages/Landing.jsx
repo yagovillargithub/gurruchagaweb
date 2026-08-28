@@ -6,8 +6,19 @@ import SiteHeader from '../components/SiteHeader.jsx';
 import SiteFooter from '../components/SiteFooter.jsx';
 import Carousel from '../components/Carousel.jsx';
 import Lightbox from '../components/Lightbox.jsx';
-import { ESTUDIO, PROYECTOS, CAROUSEL, CATEGORIAS, MODULAR } from '../data/site.js';
+import ProgressionGallery, { ProgressionPlayer } from '../components/ProgressionShowcase.jsx';
+import {
+  ESTUDIO,
+  PROYECTOS,
+  CAROUSEL,
+  PROGRESION_DESTACADA,
+  PROGRESIONES_GALERIA,
+  CATEGORIAS,
+  MODULAR,
+} from '../data/site.js';
 import { useTweaks } from '../tweaks/TweaksContext.jsx';
+
+const LANDING_LIGHTBOX_ITEMS = PROYECTOS;
 
 // Fade-up que dispara siempre al montar (no por scroll). El whileInView con
 // IntersectionObserver es frágil en captures full-page y en algunos casos deja
@@ -27,7 +38,7 @@ export default function Landing() {
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
   const openProject = (item) => {
-    const idx = PROYECTOS.findIndex((p) => p.id === item.id);
+    const idx = LANDING_LIGHTBOX_ITEMS.findIndex((p) => p.id === item.id);
     if (idx >= 0) setLightboxIndex(idx);
   };
 
@@ -50,13 +61,21 @@ export default function Landing() {
           speeds={[tweaks.carouselSpeedR1, tweaks.carouselSpeedR2, tweaks.carouselSpeedR3]}
           autoScroll={tweaks.motion !== 'reduced'}
         />
+        {/* Repaginado (#297): "por AG-studio" va pegado a "Proyectos
+            realizados" (misma línea) y la coletilla cae debajo. Antes el flex
+            de una sola línea partía la frase en dos columnas en móvil. */}
         <p className="carousel-disclaimer">
-          <strong>Proyectos realizados</strong> por AG-studio · todas las imágenes son obra propia
+          <span className="carousel-disclaimer-main">
+            <strong>Proyectos realizados</strong> por AG-studio
+          </span>
+          <span className="carousel-disclaimer-sub">
+            todas las imágenes son obra propia
+          </span>
         </p>
       </section>
 
       <Lightbox
-        items={PROYECTOS}
+        items={LANDING_LIGHTBOX_ITEMS}
         openIndex={lightboxIndex}
         onClose={() => setLightboxIndex(null)}
         onChange={setLightboxIndex}
@@ -87,77 +106,114 @@ export default function Landing() {
         }}
       />
 
-      {/* "Página 2" — arancha presenta. Va justo después de la landing
-          (carrusel). Fusiona el hero (nombre grande) con la presentación
-          profesional + stats de cierre. Fondo de obra real con overlay para
-          contraste. El logo AG-studio de la cabecera ancla aquí (#arancha).
-          TODO: cuando llegue la foto real de arancha (retrato), usarla como
-          --intro-bg en lugar del proyecto. */}
-      <section
-        id="arancha"
-        className="intro-section"
-        style={{ '--intro-bg': "url('/assets/proyectos/libreria-living-001.webp')" }}
-      >
-        <div className="intro-overlay" aria-hidden="true" />
+      {/* "Página 2" — presentación a la izquierda y evolución del montaje
+          en un marco fijo a la derecha. Las imágenes se sustituyen mediante
+          fundidos: este bloque no es otro carrusel horizontal. */}
+      <section id="arancha" className="intro-section">
         <div className="intro-grain" aria-hidden="true" />
         <motion.div
-          className="intro-content shell"
+          className="intro-layout shell"
           {...fadeUp}
         >
-          <div className="intro-eyebrow-row">
-            <span className="intro-badge">
-              <span className="intro-badge-dot" aria-hidden="true" />
-              AG-studio · {ESTUDIO.ciudad}
-            </span>
-            <span className="intro-eyebrow intro-eyebrow-vercreer">
-              <em>Ver. Creer.</em>
-            </span>
+          <div className="intro-content">
+            <div className="intro-eyebrow-row">
+              <span className="intro-badge">
+                <span className="intro-badge-dot" aria-hidden="true" />
+                AG-studio · {ESTUDIO.ciudad}
+              </span>
+              <span className="intro-eyebrow intro-eyebrow-vercreer">
+                <em>Ver. Creer.</em>
+              </span>
+            </div>
+
+            <h2 className="intro-title">
+              <span className="intro-pre">Detrás de AG-studio</span>
+              <span className="intro-brand">
+                arancha <em>gurruchaga</em>
+              </span>
+            </h2>
+
+            {/* TODO bio definitiva: arancha tiene que pasar texto real. Lo de abajo es
+                placeholder estructurado con los puntos que ella indicó en el doc
+                (formación bellas artes, cientos de trabajos en España y aquí). */}
+            <p className="intro-lede">
+              Larga trayectoria en <strong>diseño de interiores y mobiliario a medida</strong>.
+              Formación en distintas áreas de las bellas artes —
+              <strong> arquitectura, diseño industrial</strong> y dirección de obra — que se
+              traducen en proyectos que duran.
+            </p>
+
+            <p className="intro-claim">
+              <strong>Diseño, planificación y fabricación de mobiliario a medida.</strong>
+              {' '}Pensamos cocinas, livings, rincones y comercios — soluciones habitables
+              que duran. <strong>Producción propia.</strong>
+            </p>
+
+            <div className="intro-meta">
+              <div className="intro-meta-item">
+                <span className="intro-meta-num">+20</span>
+                <span className="intro-meta-lbl">años en el sector</span>
+              </div>
+              <div className="intro-meta-sep" aria-hidden="true" />
+              <div className="intro-meta-item">
+                <span className="intro-meta-num">+1000</span>
+                <span className="intro-meta-lbl">obras realizadas</span>
+              </div>
+              <div className="intro-meta-sep" aria-hidden="true" />
+              <div className="intro-meta-item">
+                <span className="intro-meta-num">100%</span>
+                <span className="intro-meta-lbl">producción propia</span>
+              </div>
+              <div className="intro-meta-sep" aria-hidden="true" />
+              <div className="intro-meta-item">
+                <span className="intro-meta-num">AG-studio</span>
+                <span className="intro-meta-lbl">diseño · oficio</span>
+              </div>
+            </div>
           </div>
 
-          <h2 className="intro-title">
-            <span className="intro-pre">Detrás de AG-studio</span>
-            <span className="intro-brand">
-              arancha <em>gurruchaga</em>
-            </span>
-          </h2>
-
-          {/* TODO bio definitiva: arancha tiene que pasar texto real. Lo de abajo es
-              placeholder estructurado con los puntos que ella indicó en el doc
-              (formación bellas artes, cientos de trabajos en España y aquí). */}
-          <p className="intro-lede">
-            Larga trayectoria en <strong>diseño de interiores y mobiliario a medida</strong>.
-            Formación en distintas áreas de las bellas artes —
-            <strong> arquitectura, diseño industrial</strong> y dirección de obra — que se
-            traducen en proyectos que duran.
-          </p>
-
-          <p className="intro-claim">
-            <strong>Diseño, planificación y fabricación de mobiliario a medida.</strong>
-            {' '}Pensamos cocinas, livings, rincones y comercios — soluciones habitables
-            que duran. <strong>Producción propia.</strong>
-          </p>
-
-          <div className="intro-meta">
-            <div className="intro-meta-item">
-              <span className="intro-meta-num">+20</span>
-              <span className="intro-meta-lbl">años en el sector</span>
+          <div className="intro-transformation">
+            <div className="intro-transformation-head">
+              <span className="intro-pre">Proyecto destacado</span>
+              <span>De la obra al resultado final</span>
             </div>
-            <div className="intro-meta-sep" aria-hidden="true" />
-            <div className="intro-meta-item">
-              <span className="intro-meta-num">+1000</span>
-              <span className="intro-meta-lbl">obras realizadas</span>
-            </div>
-            <div className="intro-meta-sep" aria-hidden="true" />
-            <div className="intro-meta-item">
-              <span className="intro-meta-num">100%</span>
-              <span className="intro-meta-lbl">producción propia</span>
-            </div>
-            <div className="intro-meta-sep" aria-hidden="true" />
-            <div className="intro-meta-item">
-              <span className="intro-meta-num">AG-studio</span>
-              <span className="intro-meta-lbl">diseño · oficio</span>
+            <ProgressionPlayer
+              progresion={PROGRESION_DESTACADA}
+              autoPlay={tweaks.motion !== 'reduced'}
+              eager
+            />
+            {/* Misma carátula que las obras de la galería (#297): tipo en la
+                display italic y materiales en mono, para que el destacado no
+                cante distinto del resto. */}
+            <div className="progression-meta">
+              <span>Obra real · clic para avanzar</span>
+              <strong>{PROGRESION_DESTACADA.tipo}</strong>
+              <small>{PROGRESION_DESTACADA.materiales}</small>
             </div>
           </div>
+        </motion.div>
+
+        {/* Galería de progresiones (tarea #295): las demás obras del paquete
+            «montaje obra», justo debajo del proyecto destacado — miniaturas
+            que rotan solas y se amplían en un popup con la misma dinámica.
+            Sustituye al antiguo expositor de procesos; conserva su ancla. */}
+        <motion.div className="progression-gallery shell" id="procesos" {...fadeUp}>
+          <div className="progression-gallery-head">
+            <span className="eyebrow">Obra real · paso a paso</span>
+            <div className="progression-gallery-copy">
+              <h2 className="h2">
+                Del espacio vacío <em>al mueble terminado.</em>
+              </h2>
+              <p className="lede">
+                Elegí un proyecto y recorré cómo toma forma: fabricación, montaje
+                y terminaciones, fase por fase.
+              </p>
+            </div>
+          </div>
+          <ProgressionGallery
+            progresiones={PROGRESIONES_GALERIA}
+            autoPlay={tweaks.motion !== 'reduced'}
+          />
         </motion.div>
       </section>
 
@@ -191,9 +247,12 @@ export default function Landing() {
               </p>
               <img
                 className="service-photo"
-                src="/assets/foto-card-proyecto.png"
+                src="/assets/foto-card-proyecto.webp"
                 alt=""
                 loading="lazy"
+                decoding="async"
+                width="1448"
+                height="1086"
               />
             </article>
             <article className="service">
@@ -206,9 +265,12 @@ export default function Landing() {
               </p>
               <img
                 className="service-photo"
-                src="/assets/foto-card-produccion.png"
+                src="/assets/foto-card-produccion.webp"
                 alt=""
                 loading="lazy"
+                decoding="async"
+                width="1448"
+                height="1086"
               />
             </article>
             <article className="service">
@@ -223,6 +285,9 @@ export default function Landing() {
                 src="/assets/foto-card-obra.webp"
                 alt=""
                 loading="lazy"
+                decoding="async"
+                width="1448"
+                height="1086"
               />
             </article>
             <article className="service">
@@ -234,9 +299,12 @@ export default function Landing() {
               </p>
               <img
                 className="service-photo"
-                src="/assets/foto-card-comercios.png"
+                src="/assets/foto-card-comercios.webp"
                 alt=""
                 loading="lazy"
+                decoding="async"
+                width="1448"
+                height="1086"
               />
             </article>
           </motion.div>
@@ -281,8 +349,12 @@ export default function Landing() {
                   sobre el fondo oscuro del teaser. */}
               <img
                 className="modular-card-logo"
-                src="/assets/logo-modular-naranja.png"
+                src="/assets/logo-modular-naranja.webp"
                 alt="Modular · diseño funcional en melamina"
+                loading="lazy"
+                decoding="async"
+                width="1563"
+                height="467"
               />
               <p className="modular-lede">
                 Estamos desarrollando una <strong>línea nueva de muebles modulares</strong>:

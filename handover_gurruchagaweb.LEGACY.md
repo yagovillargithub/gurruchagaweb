@@ -179,7 +179,7 @@ SMTP_HOST=mail.unlimited-systems.net
 SMTP_PORT=465
 SMTP_SECURE=true
 SMTP_USER=info@unlimited-systems.net
-SMTP_PASS=lzmW3S!nAebYcVM^                            # ★ misma de handover_mailServer.md §3
+SMTP_PASS=<la del gestor de secretos del servidor; NUNCA en el repo>                            # ★ misma de handover_mailServer.md §3
 MAIL_FROM=AG Studio <info@unlimited-systems.net>
 MAIL_TO=gurru999@gmail.com
 STATIC_ROOT=/var/www/demogurru/web                    # root para resolver imágenes adjuntas
@@ -711,3 +711,82 @@ Quitar el gate cuando la línea esté lista: borrar el `app.Use(async (ctx, next
 - **No quitar `upgrade=websocket`** del vhost. Sin SignalR, Blazor Interactive Server no es interactivo y los clicks no hacen nada (el fallback a long-polling depende de configuración cliente que no estamos forzando).
 - **No cambiar `User=www-data`** en el systemd unit por algo más restrictivo sin actualizar `chown` de `/opt/demomodular` y `/var/lib/demomodular/`. Si se hiciera, también habría que asegurar que los certificados de DataProtection se persisten en algún lugar al que el nuevo usuario pueda escribir.
 - **No cargar contenido sensible en Modular** mientras el gate sea solo `0007`. La clave es trivial — alguien que la consigue (la pasamos por WhatsApp a posibles clientes) la puede compartir. Para datos serios, usar Identity de verdad.
+
+---
+
+## 15. Validación visual automática (visual-check)
+
+> Añadido **2026-05-16**. Mecanismo común a los 4 repos del operador (EventSystem, UNLIMITED_Web, UNLIMITED_Services_Web, gurruchagaweb) que automatiza el smoke test visual: arranca Vite, captura PNGs full-page de las rutas indicadas y los deja en disco para que un agente IA (o el operador) los evalúe sin abrir navegador.
+
+### 15.1. Qué resuelve
+
+Cuando se toca CSS o JSX, el ciclo era: edit → "abro Vite a ojo → mando captura". Ahora la captura la hace el script y un agente puede ver el resultado directamente. Pilla regresiones obvias (layout roto, overflow, contraste malo, errores renderizados). NO sustituye al ojo del operador para polish/marca ni microinteracciones (hover, animaciones, marquee, carrusel).
+
+### 15.2. Cómo se usa
+
+```powershell
+# Rutas por defecto del frontend público (/ + /expositor + /contacto)
+scripts\visual-check.ps1
+
+# Rutas explícitas
+scripts\visual-check.ps1 / /expositor
+
+# Mobile
+scripts\visual-check.ps1 -Viewport 375x812
+
+# Vite ya corriendo en otra terminal — no lo arranques tú
+scripts\visual-check.ps1 -NoServerStart
+
+# No matar Vite al terminar (iteración intensiva)
+scripts\visual-check.ps1 -KeepServer
+```
+
+Capturas en `scripts/screenshots/<yyyyMMdd-HHmmss>/<ruta>.png`. Log de Vite (cuando el script lo arranca) en `scripts/screenshots/server-<timestamp>.log`.
+
+### 15.3. Cómo funciona por dentro
+
+- `scripts/visual-check/VisualCheck.csproj` — proyecto .NET 8 console con `Microsoft.Playwright`. Standalone, no entra en ninguna .sln. Solo se usa cuando el operador (o un agente) lo invoca.
+- `scripts/visual-check/Program.cs` — invocado con `--no-login` desde el wrapper (el frontend es público). Lanza Chromium headless con `IgnoreHTTPSErrors=true`, viewport configurable, espera `NetworkIdle + 800 ms` de hidratación (React+Vite es rápido) y captura full-page.
+- `scripts/visual-check.ps1` — pinguea `http://localhost:5173/`. Si no responde, hace `npm run dev` dentro de `web/` en background con `Start-Process`, espera hasta 60s, captura y al terminar mata el árbol con `taskkill /T /F` (porque `Stop-Process` no mata los hijos del wrapper de npm).
+- Tecnología elegida: Playwright .NET (no JS) — mismo binario y misma técnica que en los otros 3 repos del operador, evita meter Playwright como devDependency en `web/package.json`. Chromium se cachea globalmente en `~/AppData/Local/ms-playwright`, una sola descarga compartida entre los 4 repos.
+
+### 15.4. Cobertura por defecto y limitaciones
+
+**Cubre por defecto** (frontend público de `demogurru`):
+- `/` — landing (hero, carrusel, marquee, "lo que hacemos", about, teaser Modular, CTA)
+- `/expositor` — catálogo de proyectos
+- `/contacto` — formulario
+
+**NO cubre** (sin trabajo extra):
+- **Modular** (`demomodular`, Blazor en `:7264`): gateado por cookie `modular_demo=ok` con clave `0007`. Para capturarlo habría que setear la cookie en Playwright (`ctx.AddCookiesAsync(...)`) antes de navegar y lanzar con `-BaseUrl https://localhost:7264`. No está hecho — si hace falta, ampliar `Program.cs` con un flag `--gate-cookie` o validar Modular a mano.
+- **Estados con interacción**: hover, focus, dropdowns abiertos, scroll-triggered framer-motion, marquee en movimiento.
+- **API de contacto**: si Express no está arriba, `/contacto` carga visualmente pero submit fallaría. La captura solo valida render, no funcionalidad.
+- **Variantes del Tweaks** (§7): el sistema de personalización en vivo cambia colores/typo según query params o localStorage. El script captura siempre la versión por defecto a menos que pases la URL con `?tweaks=...`.
+- **Imágenes pesadas**: si el carrusel infinito está cargando WebPs grandes, el `NetworkIdle` puede tardar más de lo previsto y el `hydrate=800ms` quizá no sea suficiente. Override con `-HydrateMs 2000` si capturas con assets a medias.
+
+### 15.5. Protocolo para el agente IA
+
+Cuando un cambio toque pintado (`web/src/**/*.jsx`, `web/src/**/*.css`, `web/index.html`):
+
+1. **Build/lint** del frontend (`cd web && npm run build` o `npm run lint`).
+2. **`scripts\visual-check.ps1 <rutas-afectadas>`** — pasa las rutas concretas, no el set completo. Mapeo:
+   - Cambios en `Landing.jsx` o estilos globales → `/`.
+   - Cambios en `Expositor.jsx` → `/expositor`.
+   - Cambios en `Contacto.jsx` → `/contacto`.
+   - Cambios en Header/Footer/`site.js` → las 3 rutas.
+3. **Leer los PNG** con tool de imágenes y juzgar visualmente.
+4. Si hay regresiones obvias, corregir y repetir desde 1.
+5. Solo entonces dar la tarea por terminada.
+
+**Cuándo saltarse el visual-check**: cambios en `api/`, en `MODULAR/`, en config de Vite que no afecte render, documentación, scripts de deploy.
+
+### 15.6. Ficheros
+
+| Fichero | Propósito |
+|---|---|
+| `scripts/visual-check.ps1` | Wrapper: levanta Vite si no está, captura, mata Vite al salir. |
+| `scripts/visual-check/VisualCheck.csproj` | Proyecto Playwright .NET (standalone). |
+| `scripts/visual-check/Program.cs` | Captura headless con `--no-login` (frontend público). |
+| `scripts/.gitignore` | Ignora `screenshots/`, `bin/`, `obj/` y marcador de Chromium. |
+| `scripts/visual-check/.playwright-installed` | Marcador "Chromium ya instalado" local. No se commitea. |
+| `scripts/screenshots/<ts>/` | Output del run, una carpeta por timestamp. No se commitea. |

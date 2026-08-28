@@ -35,11 +35,31 @@ const transporter = nodemailer.createTransport({
   auth: { user: SMTP_USER, pass: SMTP_PASS },
 });
 
+// Adjuntos del formulario (#297): el visitante puede sumar fotos/planos. Van
+// en el JSON en base64 (el navegador ya reescala las fotos), así que /api/contact
+// necesita un límite propio. El resto de rutas siguen con los 32 kB de antes.
+const MAX_ADJUNTOS = 6;
+const MAX_ADJUNTO_BYTES = 8 * 1024 * 1024;
+const MAX_ADJUNTOS_BYTES = 15 * 1024 * 1024;
+const ADJUNTO_MIME = new Map([
+  ['image/jpeg', 'jpg'],
+  ['image/png', 'png'],
+  ['image/webp', 'webp'],
+  ['image/gif', 'gif'],
+  ['image/heic', 'heic'],
+  ['image/heif', 'heif'],
+  ['application/pdf', 'pdf'],
+]);
+
 const app = express();
 app.set('trust proxy', 1); // Apache reverse proxy
 app.disable('x-powered-by');
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(express.json({ limit: '32kb' }));
+const jsonSmall = express.json({ limit: '32kb' });
+const jsonContact = express.json({ limit: '24mb' }); // 15 MB de adjuntos + base64 (+33%)
+app.use((req, res, next) =>
+  (req.path === '/api/contact' ? jsonContact : jsonSmall)(req, res, next),
+);
 app.use(
   cors({
     origin(origin, cb) {
@@ -81,10 +101,17 @@ function escapeHtml(s) {
     .replace(/'/g, '&#39;');
 }
 
-function buildEmail({ nombre, email, telefono, proyecto, mensaje, ip, ua, ref }) {
+function buildEmail({ nombre, email, telefono, proyecto, mensaje, ip, ua, ref, adjuntos = [] }) {
   const proyectoLabel = PROYECTO_LABELS[proyecto] || proyecto || 'Sin especificar';
-  const subject = `Nuevo contacto · ${nombre} · ${proyectoLabel}`;
+  const subject =
+    `Nuevo contacto · ${nombre} · ${proyectoLabel}` +
+    (adjuntos.length ? ` · ${adjuntos.length} adjunto${adjuntos.length > 1 ? 's' : ''}` : '');
   const refLine = ref ? `Referencia: ${ref.titulo} (id: ${ref.id})\n` : '';
+  const adjuntosLine = adjuntos.length
+    ? `Adjuntos del visitante:\n` +
+      adjuntos.map((a) => `  · ${a.filename} (${formatBytes(a.bytes)})`).join('\n') +
+      `\n`
+    : '';
   const text =
     `Nuevo mensaje desde demogurru.unlimited-systems.net\n` +
     `\n` +
@@ -93,6 +120,7 @@ function buildEmail({ nombre, email, telefono, proyecto, mensaje, ip, ua, ref })
     `Teléfono:  ${telefono || '—'}\n` +
     `Proyecto:  ${proyectoLabel}\n` +
     refLine +
+    adjuntosLine +
     `\n` +
     `Mensaje:\n${mensaje}\n` +
     `\n` +
@@ -106,6 +134,19 @@ function buildEmail({ nombre, email, telefono, proyecto, mensaje, ip, ua, ref })
     : '';
   const refImageHtml = ref
     ? `<div style="margin-top:18px;padding:0;border:1px solid #e6e2d7;border-radius:10px;overflow:hidden;"><img src="cid:proyectoRef" alt="${escapeHtml(ref.titulo)}" style="display:block;width:100%;height:auto;" /></div>`
+    : '';
+  const adjuntosHtml = adjuntos.length
+    ? `<div style="margin-top:18px;padding:14px 16px;background:#f6f4ef;border-radius:10px;">
+         <div style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#888;margin-bottom:8px;">Archivos que envió ${escapeHtml(nombre)}</div>
+         <ul style="margin:0;padding-left:18px;font-size:.9rem;color:#333;">
+           ${adjuntos
+             .map(
+               (a) =>
+                 `<li>${escapeHtml(a.filename)} <span style="color:#999;">(${formatBytes(a.bytes)})</span></li>`,
+             )
+             .join('')}
+         </ul>
+       </div>`
     : '';
 
   const html = `
@@ -126,6 +167,7 @@ function buildEmail({ nombre, email, telefono, proyecto, mensaje, ip, ua, ref })
       </table>
       <div style="margin-top:18px;padding:16px;background:#f6f4ef;border-radius:10px;white-space:pre-wrap;line-height:1.5;">${escapeHtml(mensaje)}</div>
       ${refImageHtml}
+      ${adjuntosHtml}
       <div style="margin-top:20px;font-size:.7rem;color:#999;letter-spacing:.05em;">
         IP ${escapeHtml(ip)} · ${escapeHtml(ua)}<br/>${new Date().toISOString()}
       </div>
@@ -134,6 +176,77 @@ function buildEmail({ nombre, email, telefono, proyecto, mensaje, ip, ua, ref })
 </body></html>`.trim();
 
   return { subject, text, html };
+}
+
+// ─── Adjuntos subidos por el visitante (#297) ───────────────────────────────
+// Defensa en profundidad: whitelist de MIME, tamaño por fichero y total,
+// nombre saneado (nunca se escribe a disco, pero viaja al cliente de correo) y
+// comprobación de los magic bytes para que el MIME declarado no mienta.
+function magicMatches(buf, mime) {
+  if (buf.length < 12) return false;
+  const ascii = (start, end) => buf.subarray(start, end).toString('latin1');
+  switch (mime) {
+    case 'image/jpeg':
+      return buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+    case 'image/png':
+      return ascii(1, 4) === 'PNG';
+    case 'image/gif':
+      return ascii(0, 4) === 'GIF8';
+    case 'image/webp':
+      return ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP';
+    case 'image/heic':
+    case 'image/heif':
+      return ascii(4, 8) === 'ftyp';
+    case 'application/pdf':
+      return ascii(0, 4) === '%PDF';
+    default:
+      return false;
+  }
+}
+
+function sanitizeAttachmentName(name, mime) {
+  const ext = ADJUNTO_MIME.get(mime);
+  const base = path
+    .basename(String(name || ''))
+    .replace(/[^\w.\- ]+/g, '_')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 80);
+  const safe = base && base !== '.' && base !== '..' ? base : 'adjunto';
+  return new RegExp(`\\.${ext}$`, 'i').test(safe) ? safe : `${safe}.${ext}`;
+}
+
+function parseAdjuntos(raw) {
+  const attachments = [];
+  const resumen = [];
+  if (!Array.isArray(raw) || raw.length === 0) return { attachments, resumen };
+
+  let total = 0;
+  for (const item of raw.slice(0, MAX_ADJUNTOS)) {
+    if (!item || typeof item !== 'object') continue;
+    const mime = typeof item.tipo === 'string' ? item.tipo.toLowerCase().trim() : '';
+    if (!ADJUNTO_MIME.has(mime)) continue;
+    if (typeof item.datos !== 'string') continue;
+    // base64 infla 4/3: cortamos antes de reservar memoria por un payload absurdo.
+    if (item.datos.length > Math.ceil((MAX_ADJUNTO_BYTES * 4) / 3) + 1024) continue;
+
+    const content = Buffer.from(item.datos, 'base64');
+    if (!content.length || content.length > MAX_ADJUNTO_BYTES) continue;
+    if (!magicMatches(content, mime)) continue;
+    if (total + content.length > MAX_ADJUNTOS_BYTES) break;
+
+    total += content.length;
+    const filename = sanitizeAttachmentName(item.nombre, mime);
+    attachments.push({ filename, content, contentType: mime });
+    resumen.push({ filename, bytes: content.length });
+  }
+  return { attachments, resumen };
+}
+
+function formatBytes(bytes) {
+  return bytes < 1024 * 1024
+    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+    : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 // Resuelve y carga la imagen referenciada desde STATIC_ROOT, con guardia anti-traversal.
@@ -285,7 +398,8 @@ app.post('/api/tweaks-feedback', tweaksLimiter, async (req, res) => {
 
 app.post('/api/contact', limiter, async (req, res) => {
   try {
-    const { nombre, email, telefono, proyecto, mensaje, website, proyectoRef } = req.body || {};
+    const { nombre, email, telefono, proyecto, mensaje, website, proyectoRef, adjuntos } =
+      req.body || {};
 
     // honeypot — bots rellenan este campo invisible
     if (website && String(website).trim() !== '') {
@@ -320,6 +434,8 @@ app.post('/api/contact', limiter, async (req, res) => {
     const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
     const ua = String(req.headers['user-agent'] || '').slice(0, 200);
 
+    const { attachments: userAttachments, resumen: adjuntosResumen } = parseAdjuntos(adjuntos);
+
     const { subject, text, html } = buildEmail({
       nombre: nombre.trim(),
       email: email.trim(),
@@ -329,6 +445,7 @@ app.post('/api/contact', limiter, async (req, res) => {
       ip,
       ua,
       ref: refSan,
+      adjuntos: adjuntosResumen,
     });
 
     const attachments = [];
@@ -336,6 +453,7 @@ app.post('/api/contact', limiter, async (req, res) => {
       const att = await loadReferenceAttachment(refSan);
       if (att) attachments.push(att);
     }
+    attachments.push(...userAttachments);
 
     await transporter.sendMail({
       from: MAIL_FROM,
@@ -347,7 +465,7 @@ app.post('/api/contact', limiter, async (req, res) => {
       attachments,
     });
 
-    res.json({ ok: true });
+    res.json({ ok: true, adjuntos: adjuntosResumen.length });
   } catch (err) {
     console.error('[contact] send failed:', err?.message || err);
     res.status(500).json({ ok: false, error: 'No se pudo enviar el mensaje.' });
@@ -357,6 +475,11 @@ app.post('/api/contact', limiter, async (req, res) => {
 app.use((err, _req, res, _next) => {
   if (err && err.message === 'Origin not allowed') {
     return res.status(403).json({ ok: false, error: 'Origin not allowed' });
+  }
+  if (err && err.type === 'entity.too.large') {
+    return res
+      .status(413)
+      .json({ ok: false, error: 'Los archivos pesan demasiado. Probá con menos fotos.' });
   }
   console.error('[error]', err);
   res.status(500).json({ ok: false, error: 'Internal error' });

@@ -4,7 +4,30 @@ import { useSearchParams } from 'react-router-dom';
 import { ArrowRight, Check, AlertCircle, Paperclip, X as XIcon, Instagram } from 'lucide-react';
 import SiteHeader from '../components/SiteHeader.jsx';
 import SiteFooter from '../components/SiteFooter.jsx';
+import SelectField from '../components/SelectField.jsx';
+import AttachmentsField from '../components/AttachmentsField.jsx';
 import { ESTUDIO, PROYECTOS, CATEGORIAS } from '../data/site.js';
+
+const TIPOS_PROYECTO = [
+  { value: 'cocina', label: 'Cocina a medida' },
+  { value: 'living', label: 'Living / TV / Librería' },
+  { value: 'dormitorio', label: 'Dormitorio' },
+  { value: 'placard', label: 'Placards / vestidor' },
+  { value: 'bano', label: 'Baño' },
+  { value: 'integral', label: 'Proyecto integral' },
+  { value: 'otro', label: 'Otro' },
+];
+
+// Los adjuntos viajan en el JSON del POST en base64: el API los reenvía como
+// attachments del correo. Las fotos ya vienen reescaladas del navegador.
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+    reader.onerror = () => reject(new Error(`No se pudo leer ${file.name}`));
+    reader.readAsDataURL(file);
+  });
+}
 
 const initialForm = {
   nombre: '',
@@ -43,8 +66,10 @@ export default function Contacto() {
     };
   });
   const [status, setStatus] = useState({ state: 'idle', msg: '' });
+  const [files, setFiles] = useState([]);
 
   const onChange = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
+  const setField = (k) => (v) => setForm((s) => ({ ...s, [k]: v }));
 
   const removeReference = () => {
     const next = new URLSearchParams(params);
@@ -65,6 +90,15 @@ export default function Contacto() {
           img: reference.img,
         };
       }
+      if (files.length) {
+        body.adjuntos = await Promise.all(
+          files.map(async ({ file }) => ({
+            nombre: file.name,
+            tipo: file.type || 'application/octet-stream',
+            datos: await fileToBase64(file),
+          })),
+        );
+      }
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -74,8 +108,20 @@ export default function Contacto() {
       if (!res.ok || data.ok === false) {
         throw new Error(data.error || `Error ${res.status}`);
       }
-      setStatus({ state: 'ok', msg: '¡Listo! Te respondemos en 24–48hs.' });
+      // Cuántos archivos entraron lo dice el servidor, no el navegador: puede
+      // descartar alguno (formato que no es lo que dice ser, tamaño…).
+      const recibidos = Number.isInteger(data.adjuntos) ? data.adjuntos : files.length;
+      setStatus({
+        state: 'ok',
+        msg: recibidos
+          ? `¡Listo! Recibimos tu consulta y ${recibidos} archivo${recibidos > 1 ? 's' : ''}. Te respondemos en 24–48hs.`
+          : files.length
+          ? '¡Listo! Recibimos tu consulta, pero no pudimos leer los archivos: mandalos por WhatsApp y los sumamos.'
+          : '¡Listo! Te respondemos en 24–48hs.',
+      });
       setForm(initialForm);
+      files.forEach((f) => f.preview && URL.revokeObjectURL(f.preview));
+      setFiles([]);
       if (reference) removeReference();
     } catch (err) {
       setStatus({
@@ -128,7 +174,7 @@ export default function Contacto() {
                 rel="noreferrer"
                 style={{ textDecoration: 'none' }}
               >
-                <img className="icon" src="/assets/icon-whatsapp.png" alt="" />
+                <img className="icon" src="/assets/icon-whatsapp.webp" alt="" width="36" height="36" decoding="async" />
                 <div>
                   <div className="label">WhatsApp</div>
                   <div className="value">{ESTUDIO.whatsapp}</div>
@@ -275,19 +321,13 @@ export default function Contacto() {
                   </div>
                   <div className="field">
                     <label htmlFor="proyecto">Tipo de proyecto</label>
-                    <select
+                    <SelectField
                       id="proyecto"
+                      ariaLabel="Tipo de proyecto"
                       value={form.proyecto}
-                      onChange={onChange('proyecto')}
-                    >
-                      <option value="cocina">Cocina a medida</option>
-                      <option value="living">Living / TV / Librería</option>
-                      <option value="dormitorio">Dormitorio</option>
-                      <option value="placard">Placards / vestidor</option>
-                      <option value="bano">Baño</option>
-                      <option value="integral">Proyecto integral</option>
-                      <option value="otro">Otro</option>
-                    </select>
+                      options={TIPOS_PROYECTO}
+                      onChange={setField('proyecto')}
+                    />
                   </div>
                 </div>
 
@@ -301,6 +341,12 @@ export default function Contacto() {
                     required
                   />
                 </div>
+
+                <AttachmentsField
+                  files={files}
+                  onChange={setFiles}
+                  disabled={status.state === 'sending'}
+                />
 
                 {/* honeypot anti-spam: no debe rellenarse */}
                 <div style={{ position: 'absolute', left: '-9999px' }} aria-hidden="true">

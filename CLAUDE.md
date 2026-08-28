@@ -144,9 +144,9 @@ Detalle completo en [`docs/06-protocolo-pruebas.md`](docs/06-protocolo-pruebas.m
 ## Bloqueos / decisiones pendientes del operador
 
 - [ ] Fotos reales de proyectos: arancha debe pasar fotos para sustituir placeholders en `web/public/assets/proyectos/`. Crítico porque esas mismas imágenes se adjuntan a los correos del formulario (§5/§7 del legacy).
-- [ ] Optimizar imágenes pesadas (logo `3.8 MB`) — pipeline a WebP/AVIF en build.
+- [x] Optimizar imágenes pesadas — hecho 2026-07-23 (tarea #239): PNG usados → WebP, assets muertos borrados (incl. logo `3.7 MB`), attrs anti-CLS y lazy loading. Imágenes de página −93%. Ver `docs/changelog/2026-07-23_optimizacion-imagenes-webp.md`. Pipeline WebP/AVIF en build queda como mejora futura opcional.
 - [ ] Email de autorespuesta al visitante que rellena el formulario.
-- [ ] Rotar la pass de Stalwart `lzmW3S!nAebYcVM^` (compartida con admin del mail server, ver `.env` del API).
+- [ ] Rotar la pass de Stalwart (estaba en claro en este repo PÚBLICO hasta el 29-08-2026: hay que rotarla) (compartida con admin del mail server, ver `.env` del API).
 - [ ] Sitemap.xml + robots.txt + Google Search Console cuando deje de ser demo.
 - [ ] Migración a dominio definitivo si el cliente compra `gurruchaga.ar`.
 - [ ] **Fase F del sistema global**: separar memoria propia de `MODULAR/` (repo nested independiente). Mientras tanto, `docs/04-modular-blazor.md` cubre el contenido aquí.

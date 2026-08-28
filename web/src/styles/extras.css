@@ -160,12 +160,12 @@
 .lightbox .close { display: grid; place-items: center; }
 .lightbox .nav { background: transparent; border: 0; }
 
-/* Lightbox CTA bar (botón "Quiero algo parecido") */
+/* Lightbox CTA bar (botón "Quiero algo parecido"). Apaisada y en flujo,
+   DEBAJO del título de la obra (#297): antes flotaba sobre la foto y tapaba
+   el título, sobre todo en móvil. */
 .lightbox-cta {
-  position: absolute;
-  bottom: clamp(1rem, 3vw, 2rem);
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: clamp(.75rem, 2vw, 1.5rem);
@@ -225,23 +225,31 @@
   color: #fff;
   border-color: #25D366;
 }
-/* Asegurar que la caption no choca con la barra */
-.lightbox .caption { bottom: clamp(5rem, 9vw, 7rem); }
-
 @media (max-width: 640px) {
+  /* Sigue siendo apaisada: texto arriba, botones en fila debajo. Ya no hay
+     riesgo de solape porque va en flujo. */
   .lightbox-cta {
     flex-direction: column;
     align-items: stretch;
-    gap: .65rem;
+    gap: .6rem;
     border-radius: 18px;
-    padding: .85rem 1rem;
+    padding: .75rem .9rem;
     text-align: center;
   }
   .lightbox-cta-text { align-items: center; }
   .lightbox-cta-eyebrow { display: none; }
   .lightbox-cta-attach { font-size: .72rem; }
-  .lightbox-cta-buttons { justify-content: center; }
-  .lightbox .caption { bottom: clamp(8rem, 26vw, 11rem); }
+  /* Los dos botones, en una sola fila: la barra ocupa lo mínimo y deja la
+     foto lo más grande posible. */
+  .lightbox-cta-buttons { justify-content: center; flex-wrap: nowrap; gap: .4rem; }
+  .lightbox-cta-buttons .lightbox-cta-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: .6rem .55rem;
+    font-size: .7rem;
+    letter-spacing: .02em;
+    white-space: nowrap;
+  }
 }
 
 /* ─── Marquee de palabras: pensado como banner sutil de cierre del primer viewport.
@@ -1046,55 +1054,40 @@
   opacity: 1;
 }
 
-/* ───────────────────────── Bloque Intro · arancha presenta ──────────────────
-   Va justo después del carrusel + marquee (lo que el cliente llama "Página 2",
-   inmediatamente tras la landing). Presenta a arancha (bio + propuesta de
-   valor + stats de cierre) sobre un fondo de imagen de proyecto con overlay
-   fuerte para asegurar contraste del texto. El bloque sustituye al anterior
-   "Rosignolo" — Carpintería Rosignolo pasa a ser uno de los cuatro cuadros
-   de la sección "Lo que hacemos". */
+/* ───────────────── Presentación + secuencia de transformación ───────────────
+   El texto ocupa la mitad izquierda y las fases de montaje comparten un único
+   marco a la derecha. No hay desplazamiento lateral: sólo fundido entre fotos. */
 .intro-section {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  padding: clamp(4rem, 9vw, 7rem) 0;
-  background-image: var(--intro-bg);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  padding: clamp(3.5rem, 7vw, 6rem) 0;
+  background: #172131;
   color: #f5f3ee;
 }
-/* Overlay oscuro radial — más oscuro arriba/abajo, ligero en el centro */
-.intro-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(135deg,
-      rgba(20, 24, 31, 0.86) 0%,
-      rgba(31, 53, 82, 0.78) 50%,
-      rgba(20, 24, 31, 0.92) 100%),
-    radial-gradient(circle at 30% 40%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 70%);
-  backdrop-filter: saturate(70%) brightness(0.95);
-}
-/* Grano sutil para que la imagen de fondo no se vea limpia/pixelada */
 .intro-grain {
   position: absolute;
   inset: 0;
   z-index: -1;
   background-image:
-    repeating-linear-gradient(0deg, transparent 0 79px, rgba(255, 255, 255, 0.025) 79px 80px),
-    repeating-linear-gradient(90deg, transparent 0 79px, rgba(255, 255, 255, 0.025) 79px 80px);
+    radial-gradient(circle at 78% 36%, rgba(87, 121, 164, .22), transparent 42%),
+    repeating-linear-gradient(0deg, transparent 0 79px, rgba(255, 255, 255, 0.02) 79px 80px),
+    repeating-linear-gradient(90deg, transparent 0 79px, rgba(255, 255, 255, 0.02) 79px 80px);
   pointer-events: none;
-  mix-blend-mode: overlay;
 }
 
-.intro-content {
+.intro-layout {
   position: relative;
   z-index: 1;
   display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2.5rem, 5vw, 6rem);
+}
+.intro-content {
+  display: grid;
   gap: clamp(1.25rem, 2.4vw, 2rem);
-  max-width: 920px;
+  min-width: 0;
 }
 
 .intro-eyebrow-row {
@@ -1152,7 +1145,7 @@
   font-family: var(--font-display);
   font-style: var(--display-italic);
   font-weight: var(--display-weight);
-  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-size: clamp(2.4rem, 4.6vw, 4.5rem);
   line-height: .9;
   letter-spacing: -0.02em;
   color: #f5f3ee;
@@ -1180,7 +1173,7 @@
   /* Los cuatro conceptos (+20 · +1000 · 100% · AG-studio) en una sola línea
      — pedido del cliente. En móvil sí dejamos que envuelvan. */
   flex-wrap: nowrap;
-  gap: clamp(.85rem, 2.2vw, 2rem);
+  gap: clamp(.6rem, 1.2vw, 1.15rem);
   padding-top: 1.25rem;
   margin-top: .5rem;
   border-top: 1px solid rgba(245, 243, 238, 0.18);
@@ -1193,14 +1186,14 @@
   font-family: var(--font-display);
   font-style: var(--display-italic);
   font-weight: var(--display-weight);
-  font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
   line-height: 1;
   color: var(--accent);
 }
 .intro-meta-lbl {
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
-  letter-spacing: .14em;
+  font-size: clamp(.54rem, .65vw, var(--fs-eyebrow));
+  letter-spacing: .1em;
   text-transform: uppercase;
   color: rgba(245, 243, 238, 0.7);
 }
@@ -1209,9 +1202,446 @@
   height: 36px;
   background: rgba(245, 243, 238, 0.2);
 }
+
+.intro-transformation {
+  min-width: 0;
+  display: grid;
+  gap: 1rem;
+}
+.intro-transformation-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgba(245, 243, 238, .78);
+  font-family: var(--font-display);
+  font-style: var(--display-italic);
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+}
+.intro-transformation-head .intro-pre { flex: 0 0 auto; }
+
+/* ───────────────── Progresiones de obra (tarea #295) ──────────────────────
+   Sustituye a la secuencia destacada (#146), al carrusel multi-proyecto (#258)
+   y al expositor de procesos (#248). Un solo lenguaje para tres piezas: visor
+   destacado de la intro, miniaturas de la galería y popup. El marco es SIEMPRE
+   4:3 y la foto se muestra ENTERA (object-fit: contain sobre negro): si el
+   formato no coincide, rellenan bandas negras — nunca se recorta la obra. */
+.progression-player {
+  position: relative;
+  display: grid;
+}
+.progression-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid rgba(245, 243, 238, .24);
+  border-radius: var(--radius-image);
+  background: #000;
+  box-shadow: 0 30px 70px -35px rgba(0, 0, 0, .72);
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.progression-frame:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.progression-frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 1s var(--ease);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.progression-frame img.is-active { opacity: 1; }
+.progression-fase {
+  position: absolute;
+  z-index: 2;
+  top: .7rem;
+  left: .7rem;
+  padding: .32rem .62rem;
+  border: 1px solid rgba(245, 243, 238, .18);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(245, 243, 238, .88);
+  background: rgba(13, 21, 32, .45);
+  backdrop-filter: blur(7px);
+  pointer-events: none;
+}
+/* Los puntos flotan DENTRO del marco (abajo, centrados), como en la
+   referencia del cliente. Son hermanos del botón-marco, no hijos: pulsarlos
+   nunca dispara el "clic para avanzar" del marco. */
+.progression-dots {
+  position: absolute;
+  z-index: 2;
+  bottom: .75rem;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: .1rem;
+  padding: .18rem .35rem;
+  border: 1px solid rgba(245, 243, 238, .18);
+  border-radius: 999px;
+  background: rgba(13, 21, 32, .32);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .18);
+  backdrop-filter: blur(7px);
+  transform: translateX(-50%);
+}
+.progression-dots button {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.progression-dots button span {
+  width: .34rem;
+  height: .34rem;
+  border: 1px solid rgba(245, 243, 238, .8);
+  border-radius: 50%;
+  background: rgba(13, 21, 32, .3);
+  transition: width .2s ease, background-color .2s ease, border-color .2s ease;
+}
+.progression-dots button:hover span,
+.progression-dots button:focus-visible span,
+.progression-dots button.is-active span {
+  border-color: #f5f3ee;
+  background: #f5f3ee;
+}
+.progression-dots button.is-active span {
+  width: .78rem;
+  border-radius: 999px;
+}
+.progression-dots button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Pie del visor destacado (columna derecha de la intro). Misma forma y
+   tipografía que la carátula de las obras de la galería (#297): eyebrow mono,
+   tipo en display italic y materiales en mono pequeño. */
+.progression-meta {
+  display: grid;
+  gap: .3rem;
+  margin-top: 1rem;
+}
+.progression-meta span {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(245, 243, 238, .56);
+}
+.progression-meta strong {
+  font-family: var(--font-display);
+  font-style: var(--display-italic);
+  font-weight: var(--display-weight);
+  font-size: clamp(1.15rem, 1.5vw, 1.4rem);
+  line-height: 1.05;
+  color: #f5f3ee;
+}
+.progression-meta small {
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  letter-spacing: .1em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: rgba(245, 243, 238, .62);
+}
+
+/* ── Galería de miniaturas (bloque bajo la intro, mismo fondo oscuro) ── */
+.progression-gallery {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  margin-top: clamp(3rem, 6vw, 5rem);
+  padding-top: clamp(2.5rem, 5vw, 4rem);
+  border-top: 1px solid rgba(245, 243, 238, .14);
+}
+.progression-gallery-head {
+  display: grid;
+  grid-template-columns: minmax(180px, .55fr) minmax(0, 1.45fr);
+  align-items: start;
+  gap: clamp(1.5rem, 4vw, 5rem);
+}
+.progression-gallery-head .eyebrow { color: rgba(245, 243, 238, .6); }
+.progression-gallery-copy {
+  display: grid;
+  gap: .85rem;
+}
+.progression-gallery-copy .h2 {
+  max-width: 18ch;
+  color: #f5f3ee;
+}
+.progression-gallery-copy .h2 em { color: var(--accent); }
+.progression-gallery-copy .lede {
+  max-width: 58ch;
+  margin: 0;
+  color: rgba(245, 243, 238, .78);
+}
+
+/* DOS columnas (#297): a tres, las obras se leían como un collage
+   desordenado (formatos distintos + bandas del contain). A dos, la parrilla
+   es una retícula limpia y las fotos se ven bastante más grandes. */
+.progression-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+/* Con 7 obras la última quedaría suelta a la izquierda: se centra a caballo
+   de las dos columnas para cerrar el bloque en equilibrio. */
+.progression-grid > .progression-card:last-child:nth-child(2n + 1) {
+  grid-column: 1 / -1;
+  width: min(100%, calc(50% - clamp(.5rem, 1vw, .75rem)));
+  justify-self: center;
+}
+
+/* La tarjeta entera es un botón: miniatura que rota sola + CTA explícita. */
+.progression-card {
+  position: relative;
+  display: grid;
+  align-content: start;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  border: 1px solid rgba(245, 243, 238, .16);
+  border-radius: var(--radius-image);
+  background: rgba(13, 21, 32, .55);
+  cursor: pointer;
+  transition: transform .35s var(--ease), border-color .35s ease, box-shadow .35s ease;
+}
+.progression-card:hover,
+.progression-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .8);
+}
+.progression-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.progression-card-frame {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #000;
+}
+.progression-card-frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity .9s var(--ease);
+}
+.progression-card-frame img.is-active { opacity: 1; }
+/* (El rótulo "N fases" de la miniatura se retiró en #297 a petición del
+   cliente: no interesa publicar cuántas fotos integran cada montaje.) */
+.progression-card-minidots {
+  position: absolute;
+  z-index: 2;
+  bottom: .55rem;
+  left: 50%;
+  display: flex;
+  gap: .3rem;
+  transform: translateX(-50%);
+}
+.progression-card-minidots > span {
+  width: .3rem;
+  height: .3rem;
+  border-radius: 999px;
+  background: rgba(245, 243, 238, .38);
+  transition: width .25s ease, background-color .25s ease;
+}
+.progression-card-minidots > span.is-active {
+  width: .7rem;
+  background: #f5f3ee;
+}
+.progression-card-info {
+  display: grid;
+  gap: .3rem;
+  padding: .9rem 1rem 1.05rem;
+}
+.progression-card-info strong {
+  font-family: var(--font-display);
+  font-style: var(--display-italic);
+  font-weight: var(--display-weight);
+  font-size: clamp(1.15rem, 1.5vw, 1.4rem);
+  line-height: 1.05;
+  color: #f5f3ee;
+}
+.progression-card-info small {
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  letter-spacing: .1em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: rgba(245, 243, 238, .62);
+}
+.progression-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin-top: .5rem;
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.progression-card-cta .arr { transition: transform .25s var(--ease); }
+.progression-card:hover .progression-card-cta .arr,
+.progression-card:focus-visible .progression-card-cta .arr { transform: translateX(4px); }
+
+/* ── Popup de progresión (misma dinámica que el visor destacado) ── */
+.progression-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 95; /* por encima del header sticky (50); escala del lightbox (90) */
+  display: grid;
+  place-items: center;
+  padding: clamp(.75rem, 2.5vw, 2rem);
+  background: rgba(9, 14, 22, .88);
+  backdrop-filter: blur(10px);
+}
+.progression-modal-panel {
+  width: min(100%, 880px);
+  max-height: 100%;
+  overflow-y: auto;
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 2.4vw, 1.6rem);
+  border: 1px solid rgba(245, 243, 238, .16);
+  border-radius: var(--radius-image);
+  background: #10192a;
+  box-shadow: 0 60px 140px -60px rgba(0, 0, 0, .9);
+}
+.progression-modal-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.progression-modal-title {
+  min-width: 0;
+  display: grid;
+  gap: .3rem;
+}
+.progression-modal-title span {
+  font-family: var(--font-mono);
+  font-size: .6rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(245, 243, 238, .56);
+}
+.progression-modal-title strong {
+  font-family: var(--font-display);
+  font-style: var(--display-italic);
+  font-weight: var(--display-weight);
+  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  line-height: 1;
+  color: #f5f3ee;
+}
+.progression-modal-title small {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(245, 243, 238, .7);
+}
+.progression-modal-close {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  border: 1px solid rgba(245, 243, 238, .3);
+  border-radius: 50%;
+  color: #f5f3ee;
+  background: rgba(245, 243, 238, .06);
+  cursor: pointer;
+  transition: color .25s ease, background-color .25s ease, border-color .25s ease;
+}
+.progression-modal-close:hover,
+.progression-modal-close:focus-visible {
+  border-color: var(--accent);
+  color: #172131;
+  background: var(--accent);
+}
+.progression-modal-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  padding-top: .9rem;
+  border-top: 1px solid rgba(245, 243, 238, .14);
+}
+.progression-modal-cta > span {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(245, 243, 238, .6);
+}
+.progression-modal-btn { flex: 0 0 auto; }
+
+@media (max-width: 1000px) {
+  .intro-layout {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .intro-transformation { width: min(100%, 720px); }
+  .progression-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .progression-gallery-head {
+    grid-template-columns: 1fr;
+    gap: .85rem;
+  }
+}
 @media (max-width: 640px) {
   .intro-meta-sep { display: none; }
   .intro-meta { flex-wrap: wrap; gap: 1.25rem 2rem; }
+  .intro-transformation-head {
+    align-items: start;
+    flex-direction: column;
+    gap: .45rem;
+  }
+  .progression-grid { grid-template-columns: 1fr; }
+  .progression-grid > .progression-card:last-child:nth-child(2n + 1) {
+    width: 100%;
+  }
+  /* Dedos: los puntos crecen a área táctil cómoda. */
+  .progression-dots button {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .progression-dots { bottom: .6rem; }
+  .progression-modal-cta {
+    align-items: start;
+    flex-direction: column;
+  }
+}
+
+[data-motion="reduced"] .progression-frame img,
+[data-motion="reduced"] .progression-card-frame img {
+  transition: none;
 }
 
 /* Propuesta de valor breve (frase justo después de la bio): pesa más que
@@ -1247,7 +1677,25 @@
 
 /* Foto figurativa debajo de cada card de servicios. Sin marco redondeado
    (pedido del cliente). Marca de agua AG aplicada vía data-watermark. */
-.service { display: flex; flex-direction: column; gap: 1rem; }
+/* Las cuatro tarjetas comparten rejilla (#297): numerito, título, párrafo y
+   foto arrancan a la MISMA altura aunque un título ocupe dos líneas y otro
+   una. Con flex/column cada card repartía por su cuenta y el párrafo de
+   "Proyecto" quedaba más alto que el de sus vecinas. */
+.service {
+  display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+  align-content: start;
+  row-gap: 1rem;
+}
+@supports not (grid-template-rows: subgrid) {
+  .service {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .service h3 { min-height: 2em; }
+}
 .service-photo {
   display: block;
   width: 100%;
@@ -1459,7 +1907,7 @@
   inset: 0;
   /* Logotipo oficial AG-studio en blanco (mismo que la cabecera). Pedido
      del cliente: usar este logo como marca de agua en carrusel y galería. */
-  background-image: url('/assets/logo-ag-watermark.png');
+  background-image: url('/assets/logo-ag-watermark.webp');
   background-repeat: repeat;
   background-size: 104px 100px;
   background-position: center;
@@ -1471,16 +1919,19 @@
   transform-origin: center;
 }
 /* En lightbox la imagen está en un wrapper relative para anclar el ::after */
+/* Es el elemento elástico de la columna del lightbox: cede alto al título y
+   a la barra de acciones en vez de empujarlos fuera de pantalla (#297). */
 .lightbox-image {
   position: relative;
-  display: inline-block;
+  display: flex;
+  flex: 0 1 auto;
+  min-height: 0;
   max-width: 100%;
-  max-height: 90vh;
 }
 .lightbox-image img {
   display: block;
   max-width: 100%;
-  max-height: 90vh;
+  max-height: 100%;
   object-fit: contain;
   border-radius: var(--radius-image);
 }
@@ -1509,6 +1960,9 @@
 }
 
 /* ─── Caption "todas las imágenes son proyectos realizados" bajo el carrusel ─── */
+/* Repaginado (#297): dos líneas centradas — "Proyectos realizados por
+   AG-studio" y, debajo, la coletilla. Antes iba todo en un flex de una línea
+   y en móvil la frase se partía en dos columnas descuadradas. */
 .carousel-disclaimer {
   text-align: center;
   font-family: var(--font-mono);
@@ -1517,23 +1971,42 @@
   text-transform: uppercase;
   color: var(--fg-soft);
   padding: clamp(.85rem, 1.5vw, 1.25rem) var(--gutter) 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: .65rem;
+  display: grid;
+  justify-items: center;
+  gap: .4rem;
 }
-.carousel-disclaimer::before,
-.carousel-disclaimer::after {
-  content: '';
-  height: 1px;
-  background: var(--line);
-  flex: 1 1 4rem;
-  max-width: 4rem;
+/* En móvil es texto corrido y centrado (que fluya y quiebre como una frase,
+   no como dos columnas); a partir de tablet añade las rayitas laterales. */
+.carousel-disclaimer-main {
+  display: block;
+  color: var(--fg-muted);
+  text-wrap: balance;
+}
+@media (min-width: 721px) {
+  .carousel-disclaimer-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .65rem;
+  }
+  .carousel-disclaimer-main::before,
+  .carousel-disclaimer-main::after {
+    content: '';
+    height: 1px;
+    background: var(--line);
+    flex: 0 0 clamp(1.5rem, 5vw, 4rem);
+  }
 }
 .carousel-disclaimer strong {
   color: var(--fg-muted);
   font-weight: 500;
   letter-spacing: .14em;
+}
+.carousel-disclaimer-sub {
+  font-size: .58rem;
+  letter-spacing: .12em;
+  color: var(--fg-soft);
+  opacity: .85;
 }
 
 /* ─── Lightbox: meta "proyecto realizado · lugar · año" ─── */
@@ -1620,3 +2093,197 @@
   }
 }
 
+/* ─── Desplegable propio del formulario (#297) ──────────────────────────────
+   El <select> nativo abría el menú del sistema: blanco, con su tipografía y
+   casi ilegible sobre el fondo oscuro del sitio. Este control usa los mismos
+   tokens que el resto de campos. */
+.select-field { position: relative; }
+.select-control {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .8rem 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .2s var(--ease);
+}
+.select-field.is-open .select-control,
+.select-control:hover,
+.select-control:focus-visible { border-bottom-color: var(--accent); }
+.select-control:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.select-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.select-arrow {
+  flex: 0 0 auto;
+  color: var(--fg-soft);
+  transition: transform .2s var(--ease), color .2s ease;
+}
+.select-field.is-open .select-arrow { transform: rotate(180deg); color: var(--accent); }
+
+.select-list {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + .35rem);
+  left: 0;
+  right: 0;
+  max-height: 16rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: .3rem;
+  list-style: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card, 10px);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .75);
+}
+.select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .6rem .7rem;
+  border-radius: calc(var(--radius-card, 10px) - 4px);
+  color: var(--fg-muted);
+  font-size: .95rem;
+  cursor: pointer;
+}
+.select-option.is-active { background: var(--line-soft, rgba(255, 255, 255, .07)); color: var(--fg); }
+.select-option.is-selected { color: var(--fg); }
+.select-option.is-selected svg { color: var(--accent); }
+
+/* ─── Adjuntos del formulario (#297) ────────────────────────────────────────
+   Botón grande y explicativo: el cliente pedía fotos y medidas y no había
+   manera de enviarlas. */
+.attach-field { display: grid; gap: .6rem; }
+.attach-input {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+.attach-drop { display: grid; }
+.attach-cta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1.1rem 1.15rem;
+  text-align: left;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-image);
+  cursor: pointer;
+  transition: border-color .25s var(--ease), background .25s ease, transform .25s var(--ease);
+}
+.attach-cta:hover:not(:disabled),
+.attach-drop.is-dragging .attach-cta {
+  border-color: var(--accent);
+  border-style: solid;
+  background: var(--bg-elev);
+  transform: translateY(-1px);
+}
+.attach-cta:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.attach-cta:disabled { opacity: .55; cursor: not-allowed; }
+.attach-cta-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  color: var(--on-accent);
+  background: var(--accent);
+}
+.attach-cta-text { display: grid; gap: .3rem; min-width: 0; }
+.attach-cta-text strong {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+.attach-cta-text small {
+  color: var(--fg-muted);
+  font-size: .85rem;
+  line-height: 1.45;
+}
+.attach-cta-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+}
+
+.attach-list { display: grid; gap: .45rem; margin: 0; padding: 0; list-style: none; }
+.attach-item {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: .75rem;
+  padding: .45rem .6rem;
+  background: var(--bg);
+  border: 1px solid var(--line-soft, var(--line));
+  border-radius: var(--radius-card, 10px);
+}
+.attach-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--bg-elev);
+}
+.attach-thumb-doc { display: grid; place-items: center; color: var(--fg-soft); }
+.attach-item-text { display: grid; gap: .1rem; min-width: 0; }
+.attach-item-text strong {
+  font-size: .88rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.attach-item-text small { font-family: var(--font-mono); font-size: .62rem; color: var(--fg-soft); }
+.attach-remove {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--fg-soft);
+  cursor: pointer;
+  transition: color .2s ease, border-color .2s ease, background .2s ease;
+}
+.attach-remove:hover { color: #fff; background: #c0392b; border-color: #c0392b; }
+.attach-total {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: .6rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+}
+.attach-error {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin: 0;
+  font-size: .82rem;
+  color: #e2725b;
+}
+
+@media (max-width: 540px) {
+  .attach-cta { align-items: flex-start; padding: .95rem 1rem; gap: .8rem; }
+  .attach-cta-icon { width: 2.5rem; height: 2.5rem; }
+  .attach-cta-text strong { font-size: .98rem; }
+}

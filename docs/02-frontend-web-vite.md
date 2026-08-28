@@ -26,7 +26,7 @@
 Centraliza todo lo "configurable sin tocar componentes":
 
 - `ESTUDIO`: nombre, WhatsApp (`5492954272523`), `whatsappLink`, redes, email, ciudad, etc. Cambiar aquí y redesplegar `-Step frontend`.
-  - `ESTUDIO.instagram` (desde 2026-07-03: `@gurruchaga3d`, tomado del front legacy; pendiente confirmar con arancha). Alimenta **dos** consumidores: el banner `InstagramBanner` de la home y la fila de Instagram en Contacto. Vacío = ninguno se renderiza (sin enlace roto).
+  - `ESTUDIO.instagram` (desde 2026-07-03: `@gurruchaga3d`, tomado del front legacy; pendiente confirmar con arancha). Alimenta **dos** consumidores: el enlace discreto del footer (columna Contacto) y la fila de Instagram en Contacto. Vacío = ninguno se renderiza (sin enlace roto).
 - `CATEGORIAS`: ids y labels de filtros del Expositor.
 - `PROYECTOS`: array de `{ id, titulo, categoria, anio, img, lugar }`. Las imágenes referenciadas con `/assets/proyectos/<file>.jpg` viven en `web/public/assets/proyectos/` (y, una vez deployadas, en `/var/www/demogurru/web/assets/proyectos/` — el API las lee de ahí para adjuntarlas al correo).
 - `MODULAR`: `{ nombre, url, descriptor }`. El teaser de la home enlaza a `MODULAR.url` con `target="_blank"`.
@@ -71,10 +71,22 @@ Tres variantes (`paralelo` / `infinito` / `diagonal`):
 Detalles importantes:
 
 - **Truly infinite (sin huecos al final)**: cada fila base se rellena con `pad(items, MIN_PER_ROW=14, items)` antes del duplicado `[...row, ...row]`. La animación CSS `transform: translateX(-50%)` cierra perfecto porque el contenido base supera el ancho del viewport. Si en el futuro hay un solo proyecto (`items.length === 1`), el `pad()` lo replicará 14 veces y seguirá sin huecos.
-- **Hover NO pausa la animación**. Lo que pasa al hover: la imagen hace `transform: scale(1.06)` + `box-shadow` profunda, sin tocar `animation-play-state`.
+- **Hover pausa SOLO la fila señalada** (tarea #294). La pausa vive en cada fila (`MarqueeRow` para paralelo/infinito, `DiagonalRow` para diagonal), con una instancia propia de `useAutoplayInteraction()` por fila: parar una fila para mirar una obra no congela a sus hermanas. Antes el hook se llamaba una sola vez en `Carousel` y su `isPaused` se propagaba a las tres filas. En diagonal la pausa es la clase `is-autoplay-paused` **en la propia fila** (`app.css`: `.cv-diagonal .row.is-autoplay-paused`); ese bloque debe quedar **después** de `.row.r1`/`.row.r2` o el atajo `animation` lo pisaría en silencio. Además, al hover la imagen hace `transform: scale(1.06)` + `box-shadow` profunda.
 - **Click en una imagen del carrusel** abre el `<Lightbox>` con esa imagen ampliada — disparador del flow "Quiero algo parecido".
 - **Velocidad y altura controladas por CSS vars**: `--carousel-speed-mult` divide `animation-duration`, `--carousel-h-scale` multiplica el `max` del `clamp()` de los anchos.
 - **Posición**: arriba del todo en `Landing.jsx` (clase `.carousel-section.top`), antes del marquee y del hero. Cambio explícito del cliente: la web entra mostrando obra, no copy.
+
+#### Progresiones de obra — `components/ProgressionShowcase.jsx` (tarea #295)
+
+Rework completo del bloque de progresiones (sustituye a la secuencia destacada #146, al carrusel multi-proyecto #258 y al expositor de procesos #248, siguiendo la referencia visual del cliente). Todo vive en la sección intro de la home:
+
+- **Visor destacado** (columna derecha de la intro): `ProgressionPlayer` con la progresión fijada por el cliente — la **cocina en termoformado Blanco Snow** (`destacada: true` en `site.js`). Fundido automático cada 3,8 s, clic/swipe para avanzar, puntos DENTRO del marco (abajo, centrados) para ir a una fase, badge «Fase NN/NN» arriba a la izquierda.
+- **Galería de miniaturas** (debajo del bloque intro, mismo fondo, ancla `id="procesos"`): las otras 7 obras como tarjetas-botón (`ProgressionCard`). Cada miniatura **rota sola** sus fases (periodo propio `4200 + (i % 4) * 350` ms para que la parrilla no vaya sincronizada), con badge «N fases», mini-puntos de progreso y CTA «Ver progresión». Con 7 obras (3+3+1), la última tarjeta se centra vía `:last-child:nth-child(3n+1)`.
+- **Popup** (`ProgressionModal`): al pulsar una tarjeta se abre el player en grande con la misma dinámica (autoplay + clic avanza + puntos). Cierra con X, Esc o clic en el fondo; incluye CTA «Ver más en {categoría}» → `/expositor?cat=…` (respeta el flow «Quiero algo parecido»: nunca lanza contacto directo).
+
+**Encuadre**: el marco es SIEMPRE 4:3 y la foto se muestra **entera** (`object-fit: contain` sobre `#000`): las bandas negras rellenan lo que falte, nunca se recorta la obra (pedido explícito del cliente — el paquete mezcla retratos 1122×1402, apaisados 1448×1086 y panorámicas 1672×941, incluso dentro de una misma colección).
+
+Los datos viven en `PROGRESIONES` / `PROGRESION_DESTACADA` / `PROGRESIONES_GALERIA` (`data/site.js`); las 42 imágenes en `public/assets/progresiones/<id>-NN.webp` (fases renumeradas correlativas; el orden de cada secuencia se validó visualmente al importar — los sufijos «(n)» del paquete original traían huecos y regeneraciones fuera de orden). Los títulos (`tipo` + `materiales`) provienen de los nombres de carpeta que entregó la clienta; no parafrasear. La pausa por interacción reutiliza `useAutoplayInteraction` (una instancia por pieza); `motion=reduced` apaga autoplay y transiciones pero mantiene la navegación manual. Estilos: bloque «Progresiones de obra» en `extras.css`.
 
 ### Marquee de palabras — `components/TaglineMarquee.jsx`
 
@@ -85,9 +97,9 @@ Ticker que recorre `['ver', 'creer', 'diseñar', 'fabricar', 'habitar']` en bucl
 - Tipografía controlada por `<html data-marquee>` (4 valores). Default `sansplana` = Manrope 700 + `transform: scaleY(0.82)`.
 - **Tamaño deliberadamente contenido**: `font-size: clamp(1.1rem, 2vw, 1.7rem)` + padding vertical `.5rem`. El cliente lo quiere como **banner sutil de cierre** del primer viewport — si lo subes deja de caber sobre el fold y rompes la composición Landing → Carrusel → Marquee → (resto al scroll).
 
-### Banner de Instagram — `components/InstagramBanner.jsx` (2026-07-03)
+### Instagram — enlace discreto en el footer (2026-07-04)
 
-Banner ancho justo debajo del carrusel de la home (el público objetivo es muy activo en Instagram y entra desde el celular). Todo el banner es un único `<a target="_blank" rel="noopener">` al perfil. Contenedor en tokens del sitio (respeta paletas/Tweaks); el chip del ícono usa el **degradado oficial de Instagram** como único acento ajeno — deliberado, para reconocimiento instantáneo. En ≤640px pasa a columna centrada. Se oculta solo si `ESTUDIO.instagram` está vacío. CSS en `extras.css` (§ "Banner Instagram").
+Enlace de texto `Instagram · @gurruchaga3d` en la columna Contacto de `SiteFooter.jsx` (donde antes estuvo Facebook), más la fila de Instagram en la página Contacto. Se oculta si `ESTUDIO.instagram` está vacío. **Historia**: el 2026-07-03 se probó un banner prominente bajo el carrusel (`InstagramBanner.jsx`); Yago pidió revertirlo el 2026-07-04 — Instagram debe ser discreto y al pie, no protagonista arriba. El componente y su CSS (§ "Banner Instagram" en `extras.css`) se eliminaron; no recrear el banner sin pedido explícito.
 
 ### Firma "Unlimited" — `UnlimitedSignature` en `components/SiteFooter.jsx` (2026-07-03)
 
@@ -152,7 +164,8 @@ Detalle del flow completo en [`03-api-contacto-node.md`](03-api-contacto-node.md
 | Sistema Tweaks (estado + hook + applyToRoot) | `web/src/tweaks/TweaksContext.jsx` |
 | Panel de Tweaks (UI drawer) | `web/src/tweaks/TweaksPanel.jsx` |
 | Carrusel multivariante | `web/src/components/Carousel.jsx` |
-| Banner Instagram (home, bajo el carrusel) | `web/src/components/InstagramBanner.jsx` |
+| Secuencias de proceso | `web/src/pages/Landing.jsx`, datos en `web/src/data/site.js` |
+| Enlace Instagram (footer, columna Contacto) | `web/src/components/SiteFooter.jsx` |
 | Firma Unlimited (tras el footer, todas las páginas) | `web/src/components/SiteFooter.jsx` (función `UnlimitedSignature`) |
 | Marquee | `web/src/components/TaglineMarquee.jsx` |
 | Lightbox compartido | `web/src/components/Lightbox.jsx` |
@@ -174,3 +187,26 @@ Detalle del flow completo en [`03-api-contacto-node.md`](03-api-contacto-node.md
 - **Despliegue del frontend (`-Step frontend`)**: [`05-despliegue.md`](05-despliegue.md).
 - **Validación visual antes de cerrar tarea**: [`06-protocolo-pruebas.md`](06-protocolo-pruebas.md).
 - **Histórico**: [`changelog/2026-05-07_bootstrap-vite-y-api.md`](changelog/2026-05-07_bootstrap-vite-y-api.md), [`changelog/2026-05-08_modular-y-localizacion.md`](changelog/2026-05-08_modular-y-localizacion.md).
+
+---
+
+## Iteración #297 (2026-08-17) — peticiones del cliente sobre gurru-test
+
+- `components/SelectField.jsx` — desplegable propio (listbox accesible) que
+  sustituye al `<select>` nativo en el formulario: el menú del sistema no
+  respetaba la estética y era ilegible sobre el fondo oscuro.
+- `components/AttachmentsField.jsx` — subida de fotos/planos con botón grande,
+  drag & drop, miniaturas y compresión en canvas (1920 px, JPEG 0.82) antes de
+  mandar los archivos en base64 al API.
+- `hooks/useInView.js` — los pases de progresión sólo corren cuando están a la
+  vista y rebobinan a la fase 01 al salir; ritmo 2200 ms (tarjetas 2600 ms) y
+  pausa de 7 s tras tocar.
+- Galería de obras a **dos** columnas, sin rótulos "N fases"; carátula del
+  destacado idéntica a las de la galería.
+- `.lightbox` pasa a columna (foto → título → barra apaisada): la barra ya no
+  tapa el título.
+- `.services` usa `grid-template-rows: subgrid` para que las cuatro cards
+  alineen numerito, título, párrafo y foto.
+- Disclaimer del carrusel repaginado (rayitas laterales sólo ≥721 px).
+
+Detalle y verificación: `docs/changelog/2026-08-17_mejoras-cliente-297.md`.
