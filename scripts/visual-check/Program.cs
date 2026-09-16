@@ -15,7 +15,8 @@ using Microsoft.Playwright;
 
 var baseUrl  = Environment.GetEnvironmentVariable("VC_BASE_URL")  ?? "https://localhost:7021";
 var email    = Environment.GetEnvironmentVariable("VC_EMAIL")     ?? "yagogurru77@gmail.com";
-var password = Environment.GetEnvironmentVariable("VC_PASSWORD")  ?? "Dev.AVPAML7B.2026";
+var password = Environment.GetEnvironmentVariable("VC_PASSWORD")
+    ?? throw new InvalidOperationException("Falta la variable de entorno VC_PASSWORD (no hay contrasena por defecto).");
 var outDir   = Environment.GetEnvironmentVariable("VC_OUT")       ?? DefaultOutDir();
 var viewport = Environment.GetEnvironmentVariable("VC_VIEWPORT")  ?? "1440x900";
 var hydrateMs = int.TryParse(Environment.GetEnvironmentVariable("VC_HYDRATE_MS"), out var h) ? h : 1500;
